@@ -171,7 +171,9 @@ app.get("/api/config/status", (req, res) => {
   const sessionId = req.headers["x-session-id"];
   
   if (sessionId && userSessions.has(sessionId)) {
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    // Detect protocol - use HTTPS if behind a proxy (like Render)
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+    const baseUrl = `${protocol}://${req.get("host")}`;
     return res.json({
       configured: true,
       mcpUrl: `${baseUrl}/mcp/${sessionId}`,
@@ -237,7 +239,9 @@ app.post("/api/config", async (req, res) => {
       }
     }, 24 * 60 * 60 * 1000);
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    // Detect protocol - use HTTPS if behind a proxy (like Render)
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+    const baseUrl = `${protocol}://${req.get("host")}`;
     const mcpUrl = `${baseUrl}/mcp/${sessionId}`;
 
     console.log(`[CONFIG] ✅ Session created: ${sessionId}`);
