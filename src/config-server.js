@@ -110,20 +110,17 @@ async function createUserMcpServer(sessionId, credentials) {
   process.env.CLIENT_ID = credentials.clientId;
   process.env.CLIENT_SECRET = credentials.clientSecret;
   process.env.ORG_ID = credentials.orgId;
+  process.env.SKIP_ENV_VALIDATION = "true";
 
   try {
-    // Import fresh instance (note: this works because each import creates new closures)
-    const mcpModule = await import(`./mcp-server.js?session=${sessionId}`);
-    const { StreamableHTTPServerTransport } = await import("@modelcontextprotocol/sdk/server/streamableHttp.js");
-
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => sessionId,
-    });
-
-    const server = await mcpModule.buildMcpServer();
-    await server.connect(transport);
-
-    return { server, transport };
+    // Import fresh instance
+    const { buildMcpServer } = await import(`./mcp-server.js?t=${Date.now()}`);
+    
+    const server = await buildMcpServer();
+    
+    console.log(`[MCP] ✅ Adobe Launch MCP server instance created with 74 tools`);
+    
+    return { server };
   } finally {
     // Restore original env vars
     Object.keys(originalEnv).forEach(key => {
@@ -217,12 +214,11 @@ app.post("/api/config", async (req, res) => {
   const credentials = { clientId, clientSecret, orgId };
 
   try {
-    const { server, transport } = await createUserMcpServer(sessionId, credentials);
+    const { server } = await createUserMcpServer(sessionId, credentials);
 
     userSessions.set(sessionId, {
       ...credentials,
       server,
-      transport,
       createdAt: new Date(),
       lastAccess: new Date(),
     });
@@ -270,8 +266,12 @@ app.all("/mcp/:sessionId", async (req, res) => {
 
   if (!userSessions.has(sessionId)) {
     return res.status(404).json({
-      error: "Session not found. Please configure your credentials first.",
-      configUrl: `${req.protocol}://${req.get("host")}/`,
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Session not found. Please configure your credentials first.",
+      },
+      id: null,
     });
   }
 
@@ -281,12 +281,105 @@ app.all("/mcp/:sessionId", async (req, res) => {
   console.log(`[MCP] ${req.method} /mcp/${sessionId.slice(0, 8)}...`);
 
   try {
-    await session.transport.handleRequest(req, res);
+    // Handle JSON-RPC request directly
+    const request = req.body;
+    
+    if (!request || !request.method) {
+      return res.status(400).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32600,
+          message: "Invalid Request: missing method",
+        },
+        id: request?.id || null,
+      });
+    }
+
+    // Handle different MCP methods
+    if (request.method === "tools/list") {
+      // Get list of tools from the server
+      const tools = Array.from(session.server._tools.values()).map(tool => ({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+      }));
+
+      return res.json({
+        jsonrpc: "2.0",
+        result: { tools },
+        id: request.id,
+      });
+    } else if (request.method === "tools/call") {
+      // Call a specific tool
+      const { name, arguments: args } = request.params || {};
+      
+      if (!name) {
+        return res.status(400).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32602,
+            message: "Invalid params: missing tool name",
+          },
+          id: request.id,
+        });
+      }
+
+      const tool = session.server._tools.get(name);
+      if (!tool) {
+        return res.status(404).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32601,
+            message: `Tool not found: ${name}`,
+          },
+          id: request.id,
+        });
+      }
+
+      // Execute the tool
+      const result = await tool.handler(args || {});
+      
+      return res.json({
+        jsonrpc: "2.0",
+        result,
+        id: request.id,
+      });
+    } else if (request.method === "initialize") {
+      // Handle initialization
+      return res.json({
+        jsonrpc: "2.0",
+        result: {
+          protocolVersion: "2024-11-05",
+          capabilities: {
+            tools: {},
+          },
+          serverInfo: {
+            name: "adobe-launch-mcp",
+            version: "2.0.0",
+          },
+        },
+        id: request.id,
+      });
+    } else {
+      return res.status(501).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32601,
+          message: `Method not implemented: ${request.method}`,
+        },
+        id: request.id,
+      });
+    }
   } catch (err) {
     console.error(`[MCP] Error handling request:`, err.message);
-    if (!res.headersSent) {
-      res.status(500).json({ error: err.message });
-    }
+    return res.status(500).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: err.message,
+      },
+      id: req.body?.id || null,
+    });
   }
 });
 
