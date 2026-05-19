@@ -1,0 +1,43 @@
+# Optional: GitHub Actions workflow for automated testing
+# This is not required for Render deployment, but useful for CI/CD
+
+name: Test and Validate
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check for syntax errors
+      run: node --check src/*.js
+    
+    - name: Validate package.json
+      run: npm run --if-present validate
+    
+    - name: Check environment example
+      run: |
+        if [ ! -f .env.example ]; then
+          echo "Error: .env.example not found"
+          exit 1
+        fi

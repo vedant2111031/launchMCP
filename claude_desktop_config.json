@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "adobe-launch": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\Vedant Pandey\\Desktop\\Learning\\Launch\\src\\index.js"
+      ],
+      "env": {
+        "CLIENT_ID": "5a5d0cb926884d7fabb8fa441e2add9b",
+        "CLIENT_SECRET": "p8e-prAz9rhH15HpA_PDkFrdTh_4StP-n110",
+        "ORG_ID": "65B229AE5ED637A00A495E96@AdobeOrg"
+      }
+    }
+  }
+}

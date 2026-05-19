@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "adobe-launch": {
+      "command": "node",
+      "args": ["src/index.js"],
+      "disabled": false,
+      "autoApprove": [
+        "list_companies",
+        "list_properties",
+        "list_rules",
+        "list_extensions",
+        "list_data_elements"
+      ]
+    }
+  }
+}

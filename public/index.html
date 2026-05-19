@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adobe Launch AI — MCP Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#lg)"/>
+        <path d="M8 24L14 8h4l6 16h-4l-1.2-3.4H13.2L12 24H8zm6.2-6.4h3.6L16 12.4l-1.8 5.2z" fill="white"/>
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#FA0F00"/><stop offset="1" stop-color="#FF6B35"/>
+        </linearGradient></defs></svg>
+      </div>
+      <div>
+        <div class="logo-title">Launch AI</div>
+        <div class="logo-sub">Adobe Tags MCP</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="sidebarToggle" title="Collapse sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7M18 19l-7-7 7-7"/></svg>
+    </button>
+  </div>
+
+  <!-- Mode switcher — the two paths clearly labelled -->
+  <div class="mode-switcher">
+    <button class="mode-btn active" id="modeAI" title="Natural language → Gemini AI → MCP → Reactor API">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm1 11H9v-2h2v2zm0-4H9V5h2v4z"/></svg>
+      AI Chat
+      <span class="mode-badge ai">Gemini</span>
+    </button>
+    <button class="mode-btn" id="modeDirect" title="Click buttons → Direct Reactor API (no AI)">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"/></svg>
+      Direct API
+      <span class="mode-badge direct">⚡ Fast</span>
+    </button>
+  </div>
+
+  <!-- Scrollable body -->
+  <div class="sidebar-body">
+
+    <!-- AI Chat panel -->
+    <div class="sidebar-panel" id="panelAI">
+      <div class="panel-label">AI Prompts</div>
+      <div class="ai-prompts">
+        <button class="prompt-chip" data-prompt="Set up a complete new web property called 'My Site' for domain mysite.com">🏗️ New property setup</button>
+        <button class="prompt-chip" data-prompt="Create a rule called 'Page Load' with a DOM Ready event and custom code action">📋 Create page load rule</button>
+        <button class="prompt-chip" data-prompt="Install the Adobe Analytics extension on my property">🧩 Install Analytics ext</button>
+        <button class="prompt-chip" data-prompt="Create a JavaScript Variable data element called 'Page Name' reading from digitalData.page.pageInfo.pageName">📦 Page Name data element</button>
+        <button class="prompt-chip" data-prompt="Package all my changes into a library called 'Release 1.0' and publish to production">🚀 Publish all changes</button>
+        <button class="prompt-chip" data-prompt="Copy all rules from my first property to my second property">📋 Copy rules between props</button>
+        <button class="prompt-chip" data-prompt="Add a note to my most recent rule explaining what it does">📝 Add note to rule</button>
+        <button class="prompt-chip" data-prompt="Create a webhook callback that fires when any rule is created or updated">🔔 Create webhook</button>
+        <button class="prompt-chip" data-prompt="Show me all rules that contain 'checkout' in my property">🔍 Search checkout rules</button>
+        <button class="prompt-chip" data-prompt="List all my properties and their platforms">🏠 List all properties</button>
+      </div>
+
+      <div class="panel-label" style="margin-top:16px;">MCP Tools <span class="tool-count-badge" id="toolCount">0</span></div>
+      <div class="tools-list" id="toolsList"></div>
+    </div>
+
+    <!-- Direct API panel -->
+    <div class="sidebar-panel hidden" id="panelDirect">
+
+      <div class="panel-label">Properties</div>
+      <button class="api-btn" data-action="quick-companies"><span>🏢</span>Companies</button>
+      <button class="api-btn" data-action="quick-properties"><span>🏠</span>Properties</button>
+
+      <div class="panel-label">Rules &amp; Data</div>
+      <button class="api-btn" data-action="quick-rules"><span>📋</span>Rules</button>
+      <button class="api-btn" data-action="quick-rule-components"><span>⚡</span>Rule Components</button>
+      <button class="api-btn" data-action="quick-data-elements"><span>🔢</span>Data Elements</button>
+
+      <div class="panel-label">Extensions</div>
+      <button class="api-btn" data-action="quick-extensions"><span>🧩</span>Installed Extensions</button>
+      <button class="api-btn" data-action="quick-ext-packages"><span>📦</span>Extension Catalog</button>
+
+      <div class="panel-label">Publishing</div>
+      <button class="api-btn" data-action="quick-libraries"><span>📚</span>Libraries</button>
+      <button class="api-btn" data-action="quick-library-resources"><span>📎</span>Library Resources</button>
+      <button class="api-btn" data-action="quick-builds"><span>🔨</span>Builds</button>
+
+      <div class="panel-label">Infrastructure</div>
+      <button class="api-btn" data-action="quick-environments"><span>🌐</span>Environments</button>
+      <button class="api-btn" data-action="quick-hosts"><span>🖥️</span>Hosts</button>
+      <button class="api-btn" data-action="quick-secrets"><span>🔐</span>Secrets</button>
+      <button class="api-btn" data-action="quick-callbacks"><span>🔔</span>Callbacks</button>
+
+      <div class="panel-label">Utility</div>
+      <button class="api-btn" data-action="quick-search"><span>🔍</span>Search Resources</button>
+      <button class="api-btn" data-action="quick-audit"><span>📜</span>Audit Log</button>
+      <button class="api-btn" data-action="quick-profile"><span>👤</span>My Profile</button>
+    </div>
+
+  </div><!-- /sidebar-body -->
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="conn-status" id="connStatus">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting…</span>
+    </div>
+    <button class="icon-btn danger" id="clearBtn" title="Clear conversation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+    </button>
+  </div>
+
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════════════════ -->
+<main class="main" id="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="icon-btn" id="mobileMenuBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <div class="topbar-center">
+      <div class="topbar-title">Adobe Experience Platform Tags</div>
+      <div class="topbar-sub" id="topbarSub">AI Chat Mode — natural language → Gemini → Reactor API</div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="badge-pill" id="modePill">
+        <span class="pill-dot ai-dot"></span>
+        <span id="modePillText">AI Chat</span>
+      </div>
+      <div class="badge-pill mono">74 tools</div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content-area" id="contentArea">
+
+    <!-- Welcome -->
+    <div class="welcome" id="welcome">
+      <div class="welcome-hero">
+        <div class="welcome-logo">
+          <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="url(#wg)"/>
+          <path d="M16 48L28 16h8l12 32H40l-2.4-6.8H26.4L24 48H16zm12.4-12.8h7.2L32 24.8l-3.6 10.4z" fill="white"/>
+          <defs><linearGradient id="wg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FA0F00"/><stop offset="1" stop-color="#FF6B35"/>
+          </linearGradient></defs></svg>
+        </div>
+        <h1>Adobe Launch AI Assistant</h1>
+        <p>Two ways to work — pick what fits your task</p>
+      </div>
+
+      <div class="welcome-cards">
+        <div class="welcome-card ai-card" id="welcomeAI">
+          <div class="wcard-icon">🤖</div>
+          <div class="wcard-title">AI Chat Mode</div>
+          <div class="wcard-desc">Type anything in plain English. Gemini understands your intent, picks the right tools, chains API calls automatically, and summarizes results.</div>
+          <div class="wcard-examples">
+            <span>"Create a page load rule with DOM Ready event"</span>
+            <span>"Publish all my changes to production"</span>
+            <span>"Copy all rules to my staging property"</span>
+          </div>
+          <button class="wcard-btn ai-btn" onclick="switchMode('ai')">Start AI Chat →</button>
+        </div>
+
+        <div class="welcome-card direct-card" id="welcomeDirect">
+          <div class="wcard-icon">⚡</div>
+          <div class="wcard-title">Direct API Mode</div>
+          <div class="wcard-desc">Click sidebar buttons to instantly browse your Launch data. No AI, no waiting — direct Reactor API calls with results in a sortable table.</div>
+          <div class="wcard-examples">
+            <span>Browse properties, rules, extensions</span>
+            <span>View builds, libraries, environments</span>
+            <span>Check audit logs, secrets, callbacks</span>
+          </div>
+          <button class="wcard-btn direct-btn" onclick="switchMode('direct')">Browse Direct API →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages" style="display:none"></div>
+
+  </div>
+
+  <!-- Input bar (AI mode only) -->
+  <div class="input-area" id="inputArea">
+    <div class="input-wrapper" id="inputWrapper">
+      <div class="input-mode-tag" id="inputModeTag">
+        <span class="pill-dot ai-dot"></span> AI
+      </div>
+      <textarea id="userInput" class="user-input" placeholder="Ask anything… 'Create a rule that fires on all pages'" rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="input-footer">
+      <span><kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> newline</span>
+      <span id="inputFooterRight">Gemini 2.0 Flash Lite · 74 MCP tools</span>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ MODAL ═════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Details</div>
+      <button class="icon-btn" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

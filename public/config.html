@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adobe Launch MCP - Configuration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .help-text {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
+    }
+    .help-link {
+      color: #667eea;
+      text-decoration: none;
+    }
+    .help-link:hover {
+      text-decoration: underline;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .mcp-url {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 2px dashed #667eea;
+      display: none;
+    }
+    .mcp-url h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .url-box {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .url-input {
+      flex: 1;
+      padding: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .copy-btn {
+      padding: 10px 20px;
+      width: auto;
+      background: #667eea;
+      font-size: 14px;
+    }
+    .instructions {
+      margin-top: 15px;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #856404;
+    }
+    .instructions h4 {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .instructions code {
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Adobe Launch MCP Server</h1>
+    <p class="subtitle">Configure your Adobe credentials to connect this MCP server to any AI assistant</p>
+    
+    <form id="configForm">
+      <div class="form-group">
+        <label for="clientId">Client ID *</label>
+        <input type="text" id="clientId" name="clientId" required placeholder="Enter your Adobe Client ID">
+        <div class="help-text">
+          Get from <a href="https://developer.adobe.com/console" target="_blank" class="help-link">Adobe Developer Console</a>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="clientSecret">Client Secret *</label>
+        <input type="password" id="clientSecret" name="clientSecret" required placeholder="Enter your Adobe Client Secret">
+        <div class="help-text">OAuth Server-to-Server credential secret</div>
+      </div>
+
+      <div class="form-group">
+        <label for="orgId">Organization ID *</label>
+        <input type="text" id="orgId" name="orgId" required placeholder="ABC123@AdobeOrg">
+        <div class="help-text">Format: YOUR_ORG_ID@AdobeOrg</div>
+      </div>
+
+      <button type="submit" id="submitBtn">Configure & Start Server</button>
+    </form>
+
+    <div id="status" class="status"></div>
+
+    <div id="mcpUrl" class="mcp-url">
+      <h3>✅ Server Configured Successfully!</h3>
+      <p style="margin-bottom: 10px; font-size: 14px; color: #666;">Use this URL to connect to Claude, Cursor, Kiro, or any MCP-compatible AI:</p>
+      <div class="url-box">
+        <input type="text" class="url-input" id="urlInput" readonly>
+        <button type="button" class="copy-btn" onclick="copyUrl()">Copy</button>
+      </div>
+      
+      <div class="instructions">
+        <h4>📋 How to Connect:</h4>
+        <p><strong>Claude Desktop:</strong> Add to <code>claude_desktop_config.json</code></p>
+        <p><strong>Cursor:</strong> Add to <code>.cursor/mcp.json</code></p>
+        <p><strong>Kiro:</strong> Add to <code>.kiro/settings/mcp.json</code></p>
+        <p style="margin-top: 8px; font-size: 12px;">
+          Example: <code>{ "mcpServers": { "adobe-launch": { "url": "YOUR_URL" } } }</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('configForm');
+    const status = document.getElementById('status');
+    const mcpUrl = document.getElementById('mcpUrl');
+    const urlInput = document.getElementById('urlInput');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Check if already configured
+    window.addEventListener('load', async () => {
+      try {
+        const response = await fetch('/api/config/status');
+        const data = await response.json();
+        if (data.configured) {
+          showSuccess('Server already configured!');
+          showMcpUrl(data.mcpUrl);
+        }
+      } catch (err) {
+        console.log('Server not yet configured');
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        clientId: document.getElementById('clientId').value.trim(),
+        clientSecret: document.getElementById('clientSecret').value.trim(),
+        orgId: document.getElementById('orgId').value.trim()
+      };
+
+      // Validate
+      if (!formData.clientId || !formData.clientSecret || !formData.orgId) {
+        showError('All fields are required');
+        return;
+      }
+
+      if (!formData.orgId.includes('@AdobeOrg')) {
+        showError('Organization ID must be in format: YOUR_ORG_ID@AdobeOrg');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Configuring...';
+      showInfo('Validating credentials with Adobe...');
+
+      try {
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showSuccess('Configuration successful! Server is ready.');
+          showMcpUrl(data.mcpUrl);
+          form.reset();
+        } else {
+          showError(data.error || 'Configuration failed. Please check your credentials.');
+        }
+      } catch (err) {
+        showError('Network error. Please ensure the server is running.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Configure & Start Server';
+      }
+    });
+
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+    }
+
+    function showSuccess(message) {
+      showStatus(message, 'success');
+    }
+
+    function showError(message) {
+      showStatus(message, 'error');
+    }
+
+    function showInfo(message) {
+      showStatus(message, 'info');
+    }
+
+    function showMcpUrl(url) {
+      urlInput.value = url;
+      mcpUrl.style.display = 'block';
+    }
+
+    function copyUrl() {
+      urlInput.select();
+      document.execCommand('copy');
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

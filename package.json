@@ -1,0 +1,30 @@
+﻿{
+  "name": "adobe-launch-mcp",
+  "version": "2.0.0",
+  "description": "MCP server for Adobe Experience Platform Tags (Launch) — 74 tools, 3 transports",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "adobe-launch-mcp": "./src/index.js"
+  },
+  "scripts": {
+    "start":      "node src/config-server.js",
+    "test":       "node test-local.js",
+    "stdio":      "node src/index.js",
+    "http":       "node src/http-server.js",
+    "sse":        "node src/sse-server.js",
+    "client":     "node client/gemini-client.js",
+    "ui":         "node server/api.js",
+    "inspect":    "npx @modelcontextprotocol/inspector --transport http --url http://localhost:4000/mcp",
+    "inspect:stdio": "npx @modelcontextprotocol/inspector node src/index.js"
+  },
+  "engines": { "node": ">=18.0.0" },
+  "dependencies": {
+    "@google/generative-ai":     "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "axios":                     "^1.9.0",
+    "dotenv":                    "^17.4.2",
+    "express":                   "^4.18.3",
+    "zod":                       "^3.24.4"
+  }
+}
