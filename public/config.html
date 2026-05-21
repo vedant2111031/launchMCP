@@ -3,331 +3,607 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adobe Launch MCP - Configuration</title>
+  <title>Adobe Launch MCP — Access Request</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #FA0F00;
+      --orange: #FF6B35;
+      --bg: #0c0c0e;
+      --bg2: #131315;
+      --bg3: #1a1a1d;
+      --border: #28282d;
+      --border2: #363640;
+      --text: #f0f0f2;
+      --text2: #9898a4;
+      --text3: #55555f;
+      --green: #22c55e;
+      --blue: #3b82f6;
     }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
     }
-    .container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      max-width: 600px;
+
+    /* ── Card ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
       width: 100%;
+      max-width: 520px;
       padding: 40px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6);
+      animation: fadeUp .35s ease;
     }
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 32px; }
+    .logo-wrap {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, rgba(250,15,0,.2), rgba(255,107,53,.1));
+      border: 1px solid rgba(250,15,0,.3);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
       font-size: 28px;
     }
-    .subtitle {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #333;
-      font-weight: 500;
-      font-size: 14px;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
-    input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-    .help-text {
-      font-size: 12px;
-      color: #888;
-      margin-top: 5px;
-    }
-    .help-link {
-      color: #667eea;
-      text-decoration: none;
-    }
-    .help-link:hover {
-      text-decoration: underline;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-    }
-    button:active {
-      transform: translateY(0);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .status {
-      margin-top: 20px;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      display: none;
-    }
-    .status.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    .status.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .status.info {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-    .mcp-url {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border: 2px dashed #667eea;
-      display: none;
-    }
-    .mcp-url h3 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    .url-box {
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .header p  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+    /* ── Step indicator ── */
+    .steps {
       display: flex;
-      gap: 10px;
       align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 28px;
     }
-    .url-input {
-      flex: 1;
-      padding: 10px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-family: 'Courier New', monospace;
+    .step {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      position: relative;
+    }
+    .step-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--bg3);
+      border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--text3);
+      transition: all .3s;
+      z-index: 1;
+    }
+    .step.active .step-dot  { border-color: var(--red); color: var(--red); background: rgba(250,15,0,.1); }
+    .step.done .step-dot    { border-color: var(--green); background: var(--green); color: white; }
+    .step-label { font-size: 10px; color: var(--text3); white-space: nowrap; }
+    .step.active .step-label { color: var(--text2); }
+    .step.done .step-label   { color: var(--green); }
+    .step-line {
+      width: 60px; height: 2px;
+      background: var(--border);
+      margin: 0 4px;
+      margin-bottom: 18px;
+      transition: background .3s;
+    }
+    .step-line.done { background: var(--green); }
+
+    /* ── Form ── */
+    .form-section { display: none; }
+    .form-section.active { display: block; animation: fadeUp .25s ease; }
+
+    .section-title {
+      font-size: 15px; font-weight: 600; margin-bottom: 4px;
+    }
+    .section-sub {
+      font-size: 12px; color: var(--text2); margin-bottom: 20px; line-height: 1.5;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      display: block; margin-bottom: 6px;
+      font-size: 12px; font-weight: 600; color: var(--text2);
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    label .req { color: var(--red); margin-left: 2px; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
       font-size: 13px;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    input::placeholder, textarea::placeholder { color: var(--text3); }
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(250,15,0,.5);
+      box-shadow: 0 0 0 3px rgba(250,15,0,.08);
+    }
+    select { cursor: pointer; }
+    select option { background: var(--bg3); }
+
+    /* ── Password field ── */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 42px; }
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text3); cursor: pointer;
+      padding: 4px; display: flex; align-items: center;
+      transition: color .15s;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%; padding: 12px;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--red), var(--orange));
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(250,15,0,.3); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .btn-ghost {
+      background: var(--bg3); border: 1px solid var(--border2);
+      color: var(--text2); margin-bottom: 10px;
+    }
+    .btn-ghost:hover { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; margin-bottom: 16px; display: none;
+      line-height: 1.5;
+    }
+    .alert.error   { background: rgba(250,15,0,.1); border: 1px solid rgba(250,15,0,.3); color: #ff8080; }
+    .alert.success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: var(--green); }
+    .alert.info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: #93c5fd; }
+    .alert.warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #fbbf24; }
+
+    /* ── MCP URL result ── */
+    .result-box {
+      background: var(--bg3);
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 8px;
+    }
+    .result-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--green); }
+    .result-box p  { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+    .url-row { display: flex; gap: 8px; align-items: center; }
+    .url-display {
+      flex: 1; padding: 9px 12px;
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text2);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .copy-btn {
-      padding: 10px 20px;
-      width: auto;
-      background: #667eea;
-      font-size: 14px;
+      padding: 9px 16px; background: var(--green);
+      border: none; border-radius: 8px; color: #0c0c0e;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: opacity .15s;
     }
+    .copy-btn:hover { opacity: .85; }
+
     .instructions {
-      margin-top: 15px;
-      padding: 15px;
-      background: #fff3cd;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #856404;
+      margin-top: 16px;
+      padding: 14px;
+      background: rgba(59,130,246,.06);
+      border: 1px solid rgba(59,130,246,.15);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.8;
     }
-    .instructions h4 {
-      margin-bottom: 8px;
-      font-size: 14px;
+    .instructions strong { color: var(--text); }
+    .instructions ol { padding-left: 16px; margin-top: 6px; }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 20px 0; color: var(--text3); font-size: 11px;
     }
-    .instructions code {
-      background: #fff;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: 'Courier New', monospace;
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
     }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center; margin-top: 24px;
+      font-size: 11px; color: var(--text3);
+    }
+    .footer a { color: var(--text2); text-decoration: none; }
+    .footer a:hover { color: var(--text); }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin   { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🚀 Adobe Launch MCP Server</h1>
-    <p class="subtitle">Configure your Adobe credentials to connect this MCP server to any AI assistant</p>
-    
-    <form id="configForm">
-      <div class="form-group">
-        <label for="clientId">Client ID *</label>
-        <input type="text" id="clientId" name="clientId" required placeholder="Enter your Adobe Client ID">
-        <div class="help-text">
-          Get from <a href="https://developer.adobe.com/console" target="_blank" class="help-link">Adobe Developer Console</a>
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-wrap">🚀</div>
+    <h1>Adobe Launch MCP Server</h1>
+    <p>Connect any AI assistant to Adobe Experience Platform Tags.<br>Fill in your details to request access.</p>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <div class="step-dot">1</div>
+      <div class="step-label">Register</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step active" id="step2">
+      <div class="step-dot">2</div>
+      <div class="step-label">Verify</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3">
+      <div class="step-dot">3</div>
+      <div class="step-label">Connect</div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1: Registration ── -->
+  <div class="form-section active" id="sectionRegister">
+    <div class="section-title">Tell us about yourself</div>
+    <div class="section-sub">This helps us understand who is using the MCP server and reach out if needed.</div>
+
+    <div id="alertRegister" class="alert"></div>
+
+    <form id="registerForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="regName" placeholder="Jane Smith" required>
+        </div>
+        <div class="form-group">
+          <label>Email <span class="req">*</span></label>
+          <input type="email" id="regEmail" placeholder="jane@company.com" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company / Organization <span class="req">*</span></label>
+          <input type="text" id="regCompany" placeholder="Acme Corp" required>
+        </div>
+        <div class="form-group">
+          <label>Job Title</label>
+          <input type="text" id="regTitle" placeholder="Analytics Engineer">
         </div>
       </div>
 
       <div class="form-group">
-        <label for="clientSecret">Client Secret *</label>
-        <input type="password" id="clientSecret" name="clientSecret" required placeholder="Enter your Adobe Client Secret">
-        <div class="help-text">OAuth Server-to-Server credential secret</div>
+        <label>How will you use this MCP? <span class="req">*</span></label>
+        <select id="regUseCase" required>
+          <option value="" disabled selected>Select a use case…</option>
+          <option value="manage_tags">Manage tags & rules via AI</option>
+          <option value="automate_publishing">Automate library publishing</option>
+          <option value="audit_properties">Audit properties & data elements</option>
+          <option value="team_workflow">Team workflow automation</option>
+          <option value="learning">Learning / exploration</option>
+          <option value="other">Other</option>
+        </select>
       </div>
 
       <div class="form-group">
-        <label for="orgId">Organization ID *</label>
-        <input type="text" id="orgId" name="orgId" required placeholder="ABC123@AdobeOrg">
-        <div class="help-text">Format: YOUR_ORG_ID@AdobeOrg</div>
+        <label>Brief description <span class="req">*</span></label>
+        <textarea id="regDescription" placeholder="Describe what you're building or trying to accomplish…" required></textarea>
       </div>
 
-      <button type="submit" id="submitBtn">Configure & Start Server</button>
+      <div class="form-group">
+        <label>How did you hear about this?</label>
+        <select id="regSource">
+          <option value="" disabled selected>Select…</option>
+          <option value="colleague">Colleague / referral</option>
+          <option value="github">GitHub</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="adobe_community">Adobe Community</option>
+          <option value="search">Web search</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnRegister">
+        <span id="spinnerRegister" class="spinner"></span>
+        <span id="btnRegisterText">Submit Registration</span>
+      </button>
     </form>
-
-    <div id="status" class="status"></div>
-
-    <div id="mcpUrl" class="mcp-url">
-      <h3>✅ Server Configured Successfully!</h3>
-      <p style="margin-bottom: 10px; font-size: 14px; color: #666;">Use this URL to connect to Claude, Cursor, Kiro, or any MCP-compatible AI:</p>
-      <div class="url-box">
-        <input type="text" class="url-input" id="urlInput" readonly>
-        <button type="button" class="copy-btn" onclick="copyUrl()">Copy</button>
-      </div>
-      
-      <div class="instructions">
-        <h4>📋 How to Connect to Claude.ai (Connectors):</h4>
-        <ol style="margin-left: 16px; margin-top: 6px; line-height: 1.8;">
-          <li>Go to <a href="https://claude.ai" target="_blank" class="help-link" style="color:#856404">claude.ai</a> and sign in</li>
-          <li>In the left sidebar, click the <strong>Customize</strong> icon</li>
-          <li>Select <strong>Connectors</strong>, then click the <strong>+</strong> icon</li>
-          <li>Click <strong>Create app</strong></li>
-          <li>Give it a name (e.g. <em>Adobe Launch</em>) and paste the MCP URL above</li>
-          <li>Click <strong>Add</strong> — done!</li>
-        </ol>
-        <p style="margin-top: 10px; font-size: 12px;">
-          <strong>Other clients:</strong> Cursor / Kiro / Windsurf — add <code>{ "url": "YOUR_URL" }</code> to your MCP config file.
-        </p>
-      </div>
-    </div>
   </div>
 
-  <script>
-    const form = document.getElementById('configForm');
-    const status = document.getElementById('status');
-    const mcpUrl = document.getElementById('mcpUrl');
-    const urlInput = document.getElementById('urlInput');
-    const submitBtn = document.getElementById('submitBtn');
+  <!-- ── SECTION 2: Password + Adobe Credentials ── -->
+  <div class="form-section" id="sectionConfig">
+    <div class="section-title">Enter your access password</div>
+    <div class="section-sub">You should have received a password from the server admin. Enter it along with your Adobe credentials to generate your personal MCP URL.</div>
 
-    // Check if already configured
-    window.addEventListener('load', async () => {
-      try {
-        const response = await fetch('/api/config/status');
-        const data = await response.json();
-        if (data.configured) {
-          showSuccess('Server already configured!');
-          showMcpUrl(data.mcpUrl);
-        }
-      } catch (err) {
-        console.log('Server not yet configured');
-      }
+    <div id="alertConfig" class="alert"></div>
+
+    <form id="configForm">
+      <div class="form-group">
+        <label>Access Password <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="cfgPassword" placeholder="Enter the password provided to you" required>
+          <button type="button" class="pw-toggle" onclick="togglePw('cfgPassword', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="divider">Adobe Credentials</div>
+
+      <div class="form-group">
+        <label>Client ID <span class="req">*</span></label>
+        <input type="text" id="cfgClientId" placeholder="Your Adobe Client ID" required>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">
+          Get from <a href="https://developer.adobe.com/console" target="_blank" style="color:var(--text2);">Adobe Developer Console</a> → Your Project → Credentials
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Client Secret <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="cfgClientSecret" placeholder="Your Adobe Client Secret" required>
+          <button type="button" class="pw-toggle" onclick="togglePw('cfgClientSecret', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Organization ID <span class="req">*</span></label>
+        <input type="text" id="cfgOrgId" placeholder="ABC123@AdobeOrg" required>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">Format: YOUR_ORG_ID@AdobeOrg</div>
+      </div>
+
+      <button type="button" class="btn btn-ghost" onclick="goBack()">← Back</button>
+      <button type="submit" class="btn btn-primary" id="btnConfig">
+        <span id="spinnerConfig" class="spinner"></span>
+        <span id="btnConfigText">Validate & Generate MCP URL</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- ── SECTION 3: Success ── -->
+  <div class="form-section" id="sectionSuccess">
+    <div class="result-box">
+      <h3>✅ Your MCP Server is Ready</h3>
+      <p>Copy this URL and paste it into your AI client (Claude, Cursor, Kiro, ChatGPT Desktop, etc.)</p>
+      <div class="url-row">
+        <div class="url-display" id="urlDisplay">—</div>
+        <button class="copy-btn" onclick="copyUrl()">Copy</button>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <strong>How to connect:</strong>
+      <ol>
+        <li><strong>Claude.ai</strong> → Settings → Connectors → + → Create app → paste URL</li>
+        <li><strong>ChatGPT Desktop</strong> → Settings → Connect to custom MCP → Streamable HTTP → paste URL</li>
+        <li><strong>Cursor / Kiro / Windsurf</strong> → MCP config → <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px;">{ "url": "YOUR_URL" }</code></li>
+      </ol>
+    </div>
+
+    <div id="alertSuccess" class="alert" style="margin-top:16px;"></div>
+
+    <button class="btn btn-ghost" style="margin-top:16px;" onclick="startOver()">Configure another session</button>
+  </div>
+
+  <div class="footer">
+    Built on <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol</a> ·
+    <a href="https://developer.adobe.com/console" target="_blank">Adobe Developer Console</a>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  let currentSection = 'register'; // 'register' | 'config' | 'success'
+  let registrationData = null;
+
+  // ── Step helpers ──
+  function setSteps(active) {
+    // active: 1=register, 2=config, 3=success
+    const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
+    const lines = [document.getElementById('line1'), document.getElementById('line2')];
+    steps.forEach((s, i) => {
+      s.classList.remove('active', 'done');
+      if (i + 1 < active) s.classList.add('done');
+      else if (i + 1 === active) s.classList.add('active');
     });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formData = {
-        clientId: document.getElementById('clientId').value.trim(),
-        clientSecret: document.getElementById('clientSecret').value.trim(),
-        orgId: document.getElementById('orgId').value.trim()
-      };
-
-      // Validate
-      if (!formData.clientId || !formData.clientSecret || !formData.orgId) {
-        showError('All fields are required');
-        return;
-      }
-
-      if (!formData.orgId.includes('@AdobeOrg')) {
-        showError('Organization ID must be in format: YOUR_ORG_ID@AdobeOrg');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Configuring...';
-      showInfo('Validating credentials with Adobe...');
-
-      try {
-        const response = await fetch('/api/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          showSuccess('Configuration successful! Server is ready.');
-          showMcpUrl(data.mcpUrl);
-          form.reset();
-        } else {
-          showError(data.error || 'Configuration failed. Please check your credentials.');
-        }
-      } catch (err) {
-        showError('Network error. Please ensure the server is running.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Configure & Start Server';
-      }
+    lines.forEach((l, i) => {
+      l.classList.toggle('done', i + 1 < active);
     });
+    // Update dot content for done steps
+    steps.forEach((s, i) => {
+      const dot = s.querySelector('.step-dot');
+      if (s.classList.contains('done')) dot.textContent = '✓';
+      else dot.textContent = i + 1;
+    });
+  }
 
-    function showStatus(message, type) {
-      status.textContent = message;
-      status.className = `status ${type}`;
-      status.style.display = 'block';
+  function showSection(name) {
+    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section' + name).classList.add('active');
+    currentSection = name.toLowerCase();
+    if (name === 'Register') setSteps(1);
+    if (name === 'Config')   setSteps(2);
+    if (name === 'Success')  setSteps(3);
+  }
+
+  function goBack() { showSection('Register'); }
+  function startOver() { showSection('Register'); document.getElementById('registerForm').reset(); }
+
+  // ── Alert helpers ──
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `alert ${type}`;
+    el.style.display = 'block';
+  }
+  function hideAlert(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  // ── Loading state ──
+  function setLoading(btnId, spinnerId, textId, loading, text) {
+    document.getElementById(btnId).disabled = loading;
+    document.getElementById(spinnerId).style.display = loading ? 'block' : 'none';
+    document.getElementById(textId).textContent = text;
+  }
+
+  // ── Toggle password visibility ──
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const isText = input.type === 'text';
+    input.type = isText ? 'password' : 'text';
+    btn.innerHTML = isText
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  }
+
+  // ── Step 1: Registration ──
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert('alertRegister');
+
+    const name        = document.getElementById('regName').value.trim();
+    const email       = document.getElementById('regEmail').value.trim();
+    const company     = document.getElementById('regCompany').value.trim();
+    const title       = document.getElementById('regTitle').value.trim();
+    const useCase     = document.getElementById('regUseCase').value;
+    const description = document.getElementById('regDescription').value.trim();
+    const source      = document.getElementById('regSource').value;
+
+    if (!name || !email || !company || !useCase || !description) {
+      showAlert('alertRegister', 'Please fill in all required fields.', 'error');
+      return;
     }
 
-    function showSuccess(message) {
-      showStatus(message, 'success');
+    setLoading('btnRegister', 'spinnerRegister', 'btnRegisterText', true, 'Submitting…');
+
+    try {
+      const res  = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, company, title, useCase, description, source }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        registrationData = { name, email, company };
+        showSection('Config');
+        showAlert('alertConfig', `Welcome, ${name}! Enter the access password provided by the admin, then your Adobe credentials.`, 'info');
+      } else {
+        showAlert('alertRegister', data.error || 'Registration failed. Please try again.', 'error');
+      }
+    } catch (err) {
+      showAlert('alertRegister', 'Network error. Please check your connection.', 'error');
+    } finally {
+      setLoading('btnRegister', 'spinnerRegister', 'btnRegisterText', false, 'Submit Registration');
+    }
+  });
+
+  // ── Step 2: Password + Adobe credentials ──
+  document.getElementById('configForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert('alertConfig');
+
+    const password     = document.getElementById('cfgPassword').value.trim();
+    const clientId     = document.getElementById('cfgClientId').value.trim();
+    const clientSecret = document.getElementById('cfgClientSecret').value.trim();
+    const orgId        = document.getElementById('cfgOrgId').value.trim();
+
+    if (!password || !clientId || !clientSecret || !orgId) {
+      showAlert('alertConfig', 'All fields are required.', 'error');
+      return;
+    }
+    if (!orgId.includes('@AdobeOrg')) {
+      showAlert('alertConfig', 'Organization ID must be in format: YOUR_ORG_ID@AdobeOrg', 'error');
+      return;
     }
 
-    function showError(message) {
-      showStatus(message, 'error');
-    }
+    setLoading('btnConfig', 'spinnerConfig', 'btnConfigText', true, 'Validating…');
 
-    function showInfo(message) {
-      showStatus(message, 'info');
-    }
+    try {
+      const res  = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, clientId, clientSecret, orgId, ...registrationData }),
+      });
+      const data = await res.json();
 
-    function showMcpUrl(url) {
-      urlInput.value = url;
-      mcpUrl.style.display = 'block';
+      if (res.ok) {
+        document.getElementById('urlDisplay').textContent = data.mcpUrl;
+        showSection('Success');
+        if (data.warning) {
+          showAlert('alertSuccess', '⚠️ ' + data.warning, 'warning');
+        }
+      } else {
+        showAlert('alertConfig', data.error || 'Configuration failed. Please check your credentials.', 'error');
+      }
+    } catch (err) {
+      showAlert('alertConfig', 'Network error. Please check your connection.', 'error');
+    } finally {
+      setLoading('btnConfig', 'spinnerConfig', 'btnConfigText', false, 'Validate & Generate MCP URL');
     }
+  });
 
-    function copyUrl() {
-      urlInput.select();
-      document.execCommand('copy');
-      const btn = event.target;
-      const originalText = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(() => {
-        btn.textContent = originalText;
-      }, 2000);
-    }
-  </script>
+  // ── Copy URL ──
+  function copyUrl() {
+    const url = document.getElementById('urlDisplay').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied ✓';
+      btn.style.background = '#16a34a';
+      setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = ''; }, 2000);
+    });
+  }
+
+  // ── Init: check if already configured ──
+  window.addEventListener('load', async () => {
+    try {
+      const res  = await fetch('/api/config/status');
+      const data = await res.json();
+      if (data.configured) {
+        document.getElementById('urlDisplay').textContent = data.mcpUrl;
+        showSection('Success');
+      }
+    } catch {}
+  });
+</script>
 </body>
 </html>

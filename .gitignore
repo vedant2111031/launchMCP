@@ -9,3 +9,4 @@ yarn-error.log*
 *.log
 .vscode/
 .idea/
+registrations.json

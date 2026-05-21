@@ -19,6 +19,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { buildMcpServerWithCredentials } from "./mcp-server-dynamic.js";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -91,7 +92,63 @@ app.get("/health", (_req, res) => res.json({
   timestamp: new Date().toISOString(),
 }));
 
-// ─── Config status ────────────────────────────────────────────────────────────
+// ─── Registration store ───────────────────────────────────────────────────────
+// Stored in registrations.json next to the server file (persists across restarts)
+const REG_FILE = path.join(__dirname, "..", "registrations.json");
+
+function loadRegistrations() {
+  try {
+    if (fs.existsSync(REG_FILE)) return JSON.parse(fs.readFileSync(REG_FILE, "utf8"));
+  } catch {}
+  return [];
+}
+
+function saveRegistration(entry) {
+  const list = loadRegistrations();
+  list.push(entry);
+  try { fs.writeFileSync(REG_FILE, JSON.stringify(list, null, 2)); } catch (e) {
+    console.error("[REG] Could not write registrations.json:", e.message);
+  }
+}
+
+// ─── POST /api/register — collect user info ───────────────────────────────────
+app.post("/api/register", (req, res) => {
+  const { name, email, company, title, useCase, description, source } = req.body;
+
+  if (!name || !email || !company || !useCase || !description) {
+    return res.status(400).json({ error: "All required fields must be filled." });
+  }
+
+  const entry = {
+    id:          randomUUID(),
+    name,
+    email,
+    company,
+    title:       title || "",
+    useCase,
+    description,
+    source:      source || "",
+    ip:          req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown",
+    userAgent:   req.headers["user-agent"] || "",
+    registeredAt: new Date().toISOString(),
+  };
+
+  saveRegistration(entry);
+  console.log(`[REG] New registration: ${name} <${email}> — ${company} (${useCase})`);
+
+  res.json({ success: true, message: "Registration recorded." });
+});
+
+// ─── GET /api/registrations — view all registrations (admin) ─────────────────
+app.get("/api/registrations", (req, res) => {
+  const adminKey = process.env.ADMIN_KEY;
+  if (adminKey && req.headers["x-admin-key"] !== adminKey) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  res.json(loadRegistrations());
+});
+
+
 app.get("/api/config/status", (req, res) => {
   const sessionId = req.headers["x-session-id"];
   if (sessionId && userSessions.has(sessionId)) {
@@ -105,7 +162,19 @@ app.get("/api/config/status", (req, res) => {
 
 // ─── POST /api/config — validate credentials & create session ─────────────────
 app.post("/api/config", async (req, res) => {
-  const { clientId, clientSecret, orgId } = req.body;
+  const { clientId, clientSecret, orgId, password } = req.body;
+
+  // ── Password gate ──────────────────────────────────────────────────────────
+  const ACCESS_PASSWORD = process.env.ACCESS_PASSWORD;
+  if (ACCESS_PASSWORD) {
+    if (!password) {
+      return res.status(401).json({ error: "Access password is required." });
+    }
+    if (password !== ACCESS_PASSWORD) {
+      console.log(`[AUTH] Wrong password attempt from ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
+      return res.status(401).json({ error: "Incorrect access password. Please contact the admin." });
+    }
+  }
 
   if (!clientId || !clientSecret || !orgId) {
     return res.status(400).json({ error: "All fields are required" });
