@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://launchmcp.onrender.com/sitemap.xml

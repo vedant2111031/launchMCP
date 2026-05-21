@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adobe Launch MCP — Connect Your AI</title>
+  <title>Adobe Launch MCP Server | Register &amp; Connect AI to Adobe Experience Platform Tags</title>
+  <meta name="description" content="The only MCP registration platform for Adobe Experience Platform Launch. Register once, get your personal MCP Server URL, and connect Claude, ChatGPT, Cursor, Kiro or Windsurf to 74 Adobe Launch tools — tags, rules, data elements, and library publishing.">
+  <meta name="keywords" content="Adobe Launch MCP server, Adobe Experience Platform MCP, Adobe Tags MCP, Adobe Data Collection MCP, MCP server registration, connect Claude to Adobe Launch, ChatGPT Adobe Experience Platform, Cursor Adobe Launch integration, Adobe OAuth MCP URL, Adobe Launch AI automation, manage Adobe tags with AI, Adobe rules AI assistant, Adobe data elements automation, MCP URL generator Adobe, Model Context Protocol Adobe Launch, Adobe Launch Claude integration, Adobe tag manager AI, AEP Tags MCP server, Kiro Adobe Launch, Windsurf Adobe MCP, Adobe Launch tools AI">
+  <link rel="canonical" href="https://launchmcp.onrender.com/">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Vedant Pandey">
+  <meta property="og:title" content="Adobe Launch MCP Server — Connect Any AI to Adobe Experience Platform">
+  <meta property="og:description" content="Register for a personal MCP URL and connect Claude, ChatGPT, Cursor, Kiro, or Windsurf to 74 Adobe Launch tools in 3 steps. No manual setup. Just register and connect.">
+  <meta property="og:url" content="https://launchmcp.onrender.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Adobe Launch MCP">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Adobe Launch MCP — Register &amp; Connect AI to Adobe Tags">
+  <meta name="twitter:description" content="Get your personal MCP Server URL for Adobe Experience Platform in 3 steps. Works with Claude, ChatGPT, Cursor, Kiro &amp; Windsurf.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Adobe Launch MCP Server","alternateName":["Adobe Experience Platform Tags MCP","Adobe Data Collection MCP","AEP Launch MCP"],"url":"https://launchmcp.onrender.com/","description":"A personal MCP Server registration platform that connects AI assistants — Claude, ChatGPT, Cursor, Kiro, Windsurf — to Adobe Experience Platform Launch tools including tag management, rule creation, data element configuration, and library publishing workflows.","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Adobe OAuth authentication","Personal MCP URL generation","74 Adobe Launch tools via AI","Tag management via Claude","Rules automation via ChatGPT","Data element control via Cursor"],"author":{"@type":"Person","name":"Vedant Pandey","sameAs":"https://www.linkedin.com/in/vedant-pandey7/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the Adobe Launch MCP Server?","acceptedAnswer":{"@type":"Answer","text":"The Adobe Launch MCP Server is a registration platform that gives you a personal MCP URL to connect AI tools like Claude, ChatGPT, and Cursor directly to Adobe Experience Platform Launch — enabling tag management, rule creation, data element control, and library publishing through natural language."}},{"@type":"Question","name":"Which AI tools work with the Adobe Launch MCP Server?","acceptedAnswer":{"@type":"Answer","text":"The Adobe Launch MCP Server is compatible with Claude (claude.ai), ChatGPT Desktop, Cursor, Kiro, and Windsurf — any MCP-compatible AI client."}},{"@type":"Question","name":"How do I get my Adobe Launch MCP URL?","acceptedAnswer":{"@type":"Answer","text":"Fill the registration form with your details, then enter your Adobe OAuth credentials (Client ID, Client Secret, Organization ID) to instantly generate your personal MCP Server URL."}},{"@type":"Question","name":"Is Adobe Launch the same as Adobe Experience Platform Tags?","acceptedAnswer":{"@type":"Answer","text":"Yes. Adobe Launch was rebranded to Adobe Experience Platform Tags (also called Data Collection). This MCP server supports both and works with the full Adobe Data Collection suite."}}]}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -50,6 +65,42 @@
         radial-gradient(ellipse 40% 30% at 50% 50%, rgba(99,102,241,.05) 0%, transparent 70%);
       pointer-events: none;
     }
+
+    /* ── FAQ ── */
+    .faq-item {
+      background: rgba(22,27,34,.7);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .faq-item:hover { border-color: var(--border2); }
+    .faq-item[open] { border-color: rgba(99,102,241,.35); }
+    .faq-item summary {
+      padding: 16px 20px;
+      font-size: 14px; font-weight: 600; font-family: 'Sora', sans-serif;
+      cursor: pointer; list-style: none;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--text);
+      transition: color .15s;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '+'; font-size: 18px; font-weight: 300;
+      color: var(--accent); transition: transform .25s;
+      flex-shrink: 0; margin-left: 12px;
+    }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item[open] summary { color: var(--accent2); }
+    .faq-item p {
+      padding: 0 20px 16px;
+      font-size: 13px; color: var(--text2); line-height: 1.7;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ── What is this section ── */
+    #what-is-this strong { font-weight: 600; }
 
     /* ── Page wrapper ── */
     .page {
@@ -368,6 +419,14 @@
 <body>
 <div class="page">
 
+  <!-- ══ WHAT IS THIS ══ -->
+  <section id="what-is-this" style="margin-bottom:40px;padding:32px;background:rgba(22,27,34,.6);border:1px solid var(--border);border-radius:20px;backdrop-filter:blur(12px);">
+    <h2 style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;margin-bottom:12px;background:linear-gradient(135deg,#e6edf3,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">What is the Adobe Launch MCP Server?</h2>
+    <p style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:10px;">The <strong style="color:var(--text);">Adobe Launch MCP Server</strong> (also known as <strong style="color:var(--text);">Adobe Experience Platform Tags MCP</strong>) is the first open registration platform that lets you generate a personal MCP Server URL and plug any AI assistant directly into your Adobe Launch workspace.</p>
+    <p style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:10px;">Once registered and authenticated via Adobe OAuth, your AI tool gains access to <strong style="color:var(--text);">74 Adobe Launch tools</strong> — managing tags, rules, data elements, extensions, and library publishing workflows through plain language commands.</p>
+    <p style="font-size:13px;color:var(--text3);line-height:1.7;">Works with <strong style="color:var(--text2);">Claude</strong>, <strong style="color:var(--text2);">ChatGPT Desktop</strong>, <strong style="color:var(--text2);">Cursor</strong>, <strong style="color:var(--text2);">Kiro</strong>, <strong style="color:var(--text2);">Windsurf</strong>, and any MCP-compatible AI client.</p>
+  </section>
+
   <!-- ══ HERO ══ -->
   <div class="hero">
     <div class="hero-badge"><span></span> MCP Server · Adobe Launch</div>
@@ -553,6 +612,40 @@
     </div>
 
   </div><!-- /glass-card -->
+
+  <!-- ══ FAQ ══ -->
+  <section id="faq" style="margin-bottom:40px;">
+    <div class="section-label" style="margin-bottom:20px;">Frequently Asked Questions</div>
+    <h2 style="font-family:'Sora',sans-serif;font-size:20px;font-weight:700;text-align:center;margin-bottom:24px;background:linear-gradient(135deg,#e6edf3,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Everything you need to know</h2>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <details class="faq-item">
+        <summary>What is Adobe Launch MCP?</summary>
+        <p>Adobe Launch MCP connects AI assistants to Adobe Experience Platform Launch (now called Adobe Tags / Data Collection) using the Model Context Protocol. You register once, authenticate with Adobe OAuth, and get a personal URL to use in Claude, ChatGPT, Cursor, Kiro, or Windsurf.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Is this the same as Adobe Experience Platform Tags?</summary>
+        <p>Yes — Adobe Launch was officially rebranded to Adobe Experience Platform Tags and Data Collection. This MCP server supports both and gives AI access to the full suite including tags, rules, data elements, extensions, and publishing workflows.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Which AI tools are supported?</summary>
+        <p>Claude (claude.ai), ChatGPT Desktop, Cursor, Kiro, and Windsurf. Any tool that supports MCP Streamable HTTP connections will work.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Are my Adobe credentials stored?</summary>
+        <p>No. Your Adobe OAuth credentials are used only to validate your session and generate your MCP URL. They are never stored on our servers.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>How many Adobe Launch tools can I access via AI?</summary>
+        <p>74 tools — covering tag management, rule creation, data element configuration, extension management, library publishing, and property auditing.</p>
+      </details>
+
+    </div>
+  </section>
 
   <!-- ══ CONTACT FOOTER ══ -->
   <div class="contact-section">

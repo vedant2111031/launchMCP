@@ -81,10 +81,18 @@ async function validateAdobeCredentials(clientId, clientSecret, orgId) {
 }
 
 // ─── Static UI ────────────────────────────────────────────────────────────────
-app.get("/",        (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "config.html")));
-app.get("/config",  (_req, res) => res.redirect("/"));
-app.get("/style.css", (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "style.css")));
-app.get("/app.js",    (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "app.js")));
+app.get("/",           (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "config.html")));
+app.get("/config",     (_req, res) => res.redirect("/"));
+app.get("/style.css",  (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "style.css")));
+app.get("/app.js",     (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "app.js")));
+app.get("/sitemap.xml",(_req, res) => {
+  res.setHeader("Content-Type", "application/xml");
+  res.sendFile(path.join(__dirname, "..", "public", "sitemap.xml"));
+});
+app.get("/robots.txt", (_req, res) => {
+  res.setHeader("Content-Type", "text/plain");
+  res.sendFile(path.join(__dirname, "..", "public", "robots.txt"));
+});
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get("/health", (_req, res) => res.json({
