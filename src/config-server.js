@@ -20,6 +20,7 @@ import { fileURLToPath } from "url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { buildMcpServerWithCredentials } from "./mcp-server-dynamic.js";
 import fs from "fs";
+import { Resend } from "resend";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -92,7 +93,70 @@ app.get("/health", (_req, res) => res.json({
   timestamp: new Date().toISOString(),
 }));
 
-// ─── Registration store ───────────────────────────────────────────────────────
+// ─── Resend email client ──────────────────────────────────────────────────────
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+async function sendRegistrationEmail(entry) {
+  if (!resend) {
+    console.log("[EMAIL] RESEND_API_KEY not set — skipping email notification");
+    return;
+  }
+  const useCaseLabels = {
+    manage_tags:          "Manage tags & rules via AI",
+    automate_publishing:  "Automate library publishing",
+    audit_properties:     "Audit properties & data elements",
+    team_workflow:        "Team workflow automation",
+    learning:             "Learning / exploration",
+    other:                "Other",
+  };
+  const sourceLabels = {
+    colleague:       "Colleague / referral",
+    github:          "GitHub",
+    linkedin:        "LinkedIn",
+    adobe_community: "Adobe Community",
+    search:          "Web search",
+    other:           "Other",
+  };
+
+  try {
+    await resend.emails.send({
+      from:    "Adobe Launch MCP <onboarding@resend.dev>",
+      to:      process.env.NOTIFY_EMAIL || "pvedant1262@gmail.com",
+      subject: `🚀 New MCP Registration — ${entry.name} (${entry.company})`,
+      html: `
+        <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;background:#0d1117;color:#e6edf3;border-radius:12px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:28px 32px;">
+            <h1 style="margin:0;font-size:20px;font-weight:700;color:white;">New MCP Registration</h1>
+            <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,.75);">${new Date(entry.registeredAt).toLocaleString()}</p>
+          </div>
+          <div style="padding:28px 32px;">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <tr><td style="padding:8px 0;color:#8b949e;width:140px;">Name</td><td style="padding:8px 0;font-weight:600;">${entry.name}</td></tr>
+              <tr><td style="padding:8px 0;color:#8b949e;">Email</td><td style="padding:8px 0;"><a href="mailto:${entry.email}" style="color:#818cf8;">${entry.email}</a></td></tr>
+              <tr><td style="padding:8px 0;color:#8b949e;">Company</td><td style="padding:8px 0;">${entry.company}</td></tr>
+              <tr><td style="padding:8px 0;color:#8b949e;">Job Title</td><td style="padding:8px 0;">${entry.title || "—"}</td></tr>
+              <tr><td style="padding:8px 0;color:#8b949e;">Use Case</td><td style="padding:8px 0;">${useCaseLabels[entry.useCase] || entry.useCase}</td></tr>
+              <tr><td style="padding:8px 0;color:#8b949e;">Source</td><td style="padding:8px 0;">${sourceLabels[entry.source] || entry.source || "—"}</td></tr>
+              <tr><td style="padding:8px 0;color:#8b949e;">IP</td><td style="padding:8px 0;font-family:monospace;font-size:12px;">${entry.ip}</td></tr>
+            </table>
+            <div style="margin-top:20px;padding:16px;background:#161b22;border-radius:8px;border-left:3px solid #6366f1;">
+              <p style="margin:0 0 6px;font-size:12px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;">Description</p>
+              <p style="margin:0;font-size:14px;line-height:1.6;">${entry.description}</p>
+            </div>
+          </div>
+          <div style="padding:16px 32px;border-top:1px solid #30363d;font-size:11px;color:#484f58;">
+            Adobe Launch MCP Server · Registration ID: ${entry.id}
+          </div>
+        </div>
+      `,
+    });
+    console.log(`[EMAIL] ✅ Registration notification sent for ${entry.name} <${entry.email}>`);
+  } catch (err) {
+    console.error("[EMAIL] Failed to send notification:", err.message);
+  }
+}
+
+
 // Stored in registrations.json next to the server file (persists across restarts)
 const REG_FILE = path.join(__dirname, "..", "registrations.json");
 
@@ -135,6 +199,9 @@ app.post("/api/register", (req, res) => {
 
   saveRegistration(entry);
   console.log(`[REG] New registration: ${name} <${email}> — ${company} (${useCase})`);
+
+  // Fire email notification (non-blocking)
+  sendRegistrationEmail(entry).catch(() => {});
 
   res.json({ success: true, message: "Registration recorded." });
 });
