@@ -3,499 +3,637 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adobe Launch MCP — Access Request</title>
+  <title>Adobe Launch MCP — Connect Your AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --red: #FA0F00;
-      --orange: #FF6B35;
-      --bg: #0c0c0e;
-      --bg2: #131315;
-      --bg3: #1a1a1d;
-      --border: #28282d;
-      --border2: #363640;
-      --text: #f0f0f2;
-      --text2: #9898a4;
-      --text3: #55555f;
-      --green: #22c55e;
-      --blue: #3b82f6;
+      --bg:        #0d1117;
+      --bg2:       #161b22;
+      --bg3:       #1c2230;
+      --bg4:       #21283a;
+      --border:    #30363d;
+      --border2:   #3d4a5c;
+      --text:      #e6edf3;
+      --text2:     #8b949e;
+      --text3:     #484f58;
+      --accent:    #6366f1;
+      --accent2:   #818cf8;
+      --cyan:      #06b6d4;
+      --green:     #3fb950;
+      --yellow:    #d29922;
+      --red:       #f85149;
+      --glow:      rgba(99,102,241,.35);
+      --glow-sm:   rgba(99,102,241,.15);
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      overflow-x: hidden;
     }
 
-    /* ── Card ── */
-    .card {
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 20px;
-      width: 100%;
-      max-width: 520px;
-      padding: 40px;
-      box-shadow: 0 24px 80px rgba(0,0,0,.6);
-      animation: fadeUp .35s ease;
+    /* ── Background mesh ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99,102,241,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(6,182,212,.12) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(99,102,241,.05) 0%, transparent 70%);
+      pointer-events: none;
     }
 
-    /* ── Header ── */
-    .header { text-align: center; margin-bottom: 32px; }
-    .logo-wrap {
-      width: 64px; height: 64px;
-      background: linear-gradient(135deg, rgba(250,15,0,.2), rgba(255,107,53,.1));
-      border: 1px solid rgba(250,15,0,.3);
+    /* ── Page wrapper ── */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      animation: pageIn .5s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    /* ── Hero ── */
+    .hero { text-align: center; margin-bottom: 56px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 14px;
+      background: rgba(99,102,241,.1);
+      border: 1px solid rgba(99,102,241,.3);
+      border-radius: 100px;
+      font-size: 11px; font-weight: 600; color: var(--accent2);
+      letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .hero h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, #e6edf3 0%, var(--accent2) 60%, var(--cyan) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 15px; color: var(--text2); line-height: 1.7; max-width: 480px; margin: 0 auto;
+    }
+
+    /* ── How it works ── */
+    .how-section { margin-bottom: 48px; }
+    .section-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--text3); margin-bottom: 20px; text-align: center;
+    }
+    .how-steps {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+    }
+    .how-card {
+      background: rgba(22,27,34,.7);
+      border: 1px solid var(--border);
       border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 28px;
+      padding: 20px 16px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      transition: border-color .25s, transform .25s, box-shadow .25s;
+      position: relative; overflow: hidden;
     }
-    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-    .header p  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+    .how-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,.06) 0%, transparent 60%);
+      opacity: 0; transition: opacity .25s;
+    }
+    .how-card:hover { border-color: rgba(99,102,241,.4); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.3); }
+    .how-card:hover::before { opacity: 1; }
+    .how-card.active-step { border-color: rgba(99,102,241,.5); box-shadow: 0 0 0 1px rgba(99,102,241,.2), 0 8px 24px rgba(99,102,241,.15); }
+    .how-card.active-step::before { opacity: 1; }
+    .how-icon { font-size: 26px; margin-bottom: 10px; display: block; }
+    .how-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--bg4); border: 1px solid var(--border2);
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      margin-bottom: 8px;
+    }
+    .how-card.active-step .how-num { background: var(--accent); border-color: var(--accent); color: white; }
+    .how-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+    .how-desc  { font-size: 11px; color: var(--text2); line-height: 1.5; }
 
-    /* ── Step indicator ── */
-    .steps {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      margin-bottom: 28px;
+    /* ── Glass card ── */
+    .glass-card {
+      background: rgba(22,27,34,.75);
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset, 0 32px 80px rgba(0,0,0,.5);
+      margin-bottom: 32px;
     }
-    .step {
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      position: relative;
-    }
-    .step-dot {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: var(--bg3);
-      border: 2px solid var(--border2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; color: var(--text3);
-      transition: all .3s;
-      z-index: 1;
-    }
-    .step.active .step-dot  { border-color: var(--red); color: var(--red); background: rgba(250,15,0,.1); }
-    .step.done .step-dot    { border-color: var(--green); background: var(--green); color: white; }
-    .step-label { font-size: 10px; color: var(--text3); white-space: nowrap; }
-    .step.active .step-label { color: var(--text2); }
-    .step.done .step-label   { color: var(--green); }
-    .step-line {
-      width: 60px; height: 2px;
-      background: var(--border);
-      margin: 0 4px;
-      margin-bottom: 18px;
-      transition: background .3s;
-    }
-    .step-line.done { background: var(--green); }
 
-    /* ── Form ── */
+    /* ── Progress stepper inside card ── */
+    .stepper {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 32px; gap: 0;
+    }
+    .st-step { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .st-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--bg4); border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--text3);
+      transition: all .35s cubic-bezier(.22,1,.36,1);
+    }
+    .st-step.active .st-dot  { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,.12); box-shadow: 0 0 0 4px rgba(99,102,241,.12); }
+    .st-step.done .st-dot    { border-color: var(--green); background: var(--green); color: white; }
+    .st-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: .04em; text-transform: uppercase; }
+    .st-step.active .st-label { color: var(--accent2); }
+    .st-step.done .st-label   { color: var(--green); }
+    .st-line {
+      flex: 1; height: 2px; min-width: 48px; max-width: 80px;
+      background: var(--border); margin: 0 6px; margin-bottom: 20px;
+      transition: background .35s;
+    }
+    .st-line.done { background: var(--green); }
+
+    /* ── Form sections ── */
     .form-section { display: none; }
-    .form-section.active { display: block; animation: fadeUp .25s ease; }
+    .form-section.active { display: block; animation: sectionIn .3s cubic-bezier(.22,1,.36,1) both; }
 
-    .section-title {
-      font-size: 15px; font-weight: 600; margin-bottom: 4px;
+    .form-heading {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px; font-weight: 700; margin-bottom: 4px;
     }
-    .section-sub {
-      font-size: 12px; color: var(--text2); margin-bottom: 20px; line-height: 1.5;
-    }
+    .form-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group.full { grid-column: 1 / -1; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 18px; }
 
     label {
-      display: block; margin-bottom: 6px;
-      font-size: 12px; font-weight: 600; color: var(--text2);
-      text-transform: uppercase; letter-spacing: .04em;
+      display: block; margin-bottom: 7px;
+      font-size: 11px; font-weight: 600; color: var(--text2);
+      text-transform: uppercase; letter-spacing: .06em;
     }
-    label .req { color: var(--red); margin-left: 2px; }
+    label .req { color: var(--accent); margin-left: 2px; }
 
     input, select, textarea {
-      width: 100%;
-      padding: 10px 14px;
+      width: 100%; padding: 11px 14px;
       background: var(--bg3);
-      border: 1px solid var(--border2);
+      border: 1px solid var(--border);
       border-radius: 10px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: inherit;
-      transition: border-color .2s, box-shadow .2s;
-      outline: none;
+      color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      outline: none; appearance: none;
     }
-    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
     input::placeholder, textarea::placeholder { color: var(--text3); }
+    input:hover, select:hover, textarea:hover { border-color: var(--border2); }
     input:focus, select:focus, textarea:focus {
-      border-color: rgba(250,15,0,.5);
-      box-shadow: 0 0 0 3px rgba(250,15,0,.08);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--glow-sm);
+      background: var(--bg4);
     }
-    select { cursor: pointer; }
-    select option { background: var(--bg3); }
+    select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+    select option { background: #1c2230; }
 
-    /* ── Password field ── */
+    .field-hint { font-size: 11px; color: var(--text3); margin-top: 5px; line-height: 1.4; }
+    .field-hint a { color: var(--text2); text-decoration: none; border-bottom: 1px solid var(--border2); transition: color .15s; }
+    .field-hint a:hover { color: var(--accent2); }
+
+    /* ── Password toggle ── */
     .pw-wrap { position: relative; }
-    .pw-wrap input { padding-right: 42px; }
+    .pw-wrap input { padding-right: 44px; }
     .pw-toggle {
       position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
       background: none; border: none; color: var(--text3); cursor: pointer;
-      padding: 4px; display: flex; align-items: center;
-      transition: color .15s;
+      padding: 4px; display: flex; align-items: center; transition: color .15s;
     }
-    .pw-toggle:hover { color: var(--text); }
+    .pw-toggle:hover { color: var(--text2); }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0; font-size: 11px; font-weight: 600;
+      color: var(--text3); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     /* ── Buttons ── */
     .btn {
-      width: 100%; padding: 12px;
-      border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all .2s;
+      width: 100%; padding: 13px 20px;
+      border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 600; font-family: 'Sora', sans-serif;
+      cursor: pointer; transition: all .22s cubic-bezier(.22,1,.36,1);
       display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-primary {
-      background: linear-gradient(135deg, var(--red), var(--orange));
-      color: white;
+      background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+      color: white; box-shadow: 0 4px 16px rgba(99,102,241,.3);
     }
-    .btn-primary:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(250,15,0,.3); }
-    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(99,102,241,.45);
+      background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
+    }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
     .btn-ghost {
       background: var(--bg3); border: 1px solid var(--border2);
-      color: var(--text2); margin-bottom: 10px;
+      color: var(--text2); margin-bottom: 12px;
     }
-    .btn-ghost:hover { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+    .btn-ghost:hover { background: var(--bg4); border-color: var(--border2); color: var(--text); transform: translateY(-1px); }
 
     /* ── Alert ── */
     .alert {
-      padding: 10px 14px; border-radius: 8px;
-      font-size: 13px; margin-bottom: 16px; display: none;
-      line-height: 1.5;
+      padding: 11px 15px; border-radius: 10px;
+      font-size: 13px; margin-bottom: 18px; display: none; line-height: 1.5;
     }
-    .alert.error   { background: rgba(250,15,0,.1); border: 1px solid rgba(250,15,0,.3); color: #ff8080; }
-    .alert.success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: var(--green); }
-    .alert.info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: #93c5fd; }
-    .alert.warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #fbbf24; }
+    .alert.error   { background: rgba(248,81,73,.08);  border: 1px solid rgba(248,81,73,.25);  color: #ff8080; }
+    .alert.success { background: rgba(63,185,80,.08);  border: 1px solid rgba(63,185,80,.25);  color: var(--green); }
+    .alert.info    { background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.25); color: var(--accent2); }
+    .alert.warning { background: rgba(210,153,34,.08); border: 1px solid rgba(210,153,34,.25); color: #e3b341; }
 
-    /* ── MCP URL result ── */
-    .result-box {
-      background: var(--bg3);
-      border: 1px solid rgba(34,197,94,.3);
-      border-radius: 12px;
-      padding: 20px;
-      margin-top: 8px;
+    /* ── Spinner ── */
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.25);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .65s linear infinite; display: none; flex-shrink: 0;
     }
-    .result-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--green); }
+
+    /* ── Result / success ── */
+    .result-box {
+      background: rgba(63,185,80,.06);
+      border: 1px solid rgba(63,185,80,.25);
+      border-radius: 14px; padding: 22px; margin-bottom: 20px;
+    }
+    .result-box h3 { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 5px; }
     .result-box p  { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
     .url-row { display: flex; gap: 8px; align-items: center; }
     .url-display {
-      flex: 1; padding: 9px 12px;
+      flex: 1; padding: 10px 13px;
       background: var(--bg); border: 1px solid var(--border2);
-      border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+      border-radius: 9px; font-family: 'JetBrains Mono', 'Fira Code', monospace;
       font-size: 11px; color: var(--text2);
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .copy-btn {
-      padding: 9px 16px; background: var(--green);
-      border: none; border-radius: 8px; color: #0c0c0e;
-      font-size: 12px; font-weight: 700; cursor: pointer;
-      white-space: nowrap; transition: opacity .15s;
+      padding: 10px 18px; background: var(--green);
+      border: none; border-radius: 9px; color: #0d1117;
+      font-size: 12px; font-weight: 700; font-family: 'Sora', sans-serif;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity .15s, transform .15s;
     }
-    .copy-btn:hover { opacity: .85; }
+    .copy-btn:hover { opacity: .85; transform: translateY(-1px); }
 
     .instructions {
-      margin-top: 16px;
-      padding: 14px;
-      background: rgba(59,130,246,.06);
-      border: 1px solid rgba(59,130,246,.15);
-      border-radius: 10px;
-      font-size: 12px;
-      color: var(--text2);
-      line-height: 1.8;
+      background: rgba(99,102,241,.05);
+      border: 1px solid rgba(99,102,241,.15);
+      border-radius: 12px; padding: 16px;
+      font-size: 12px; color: var(--text2); line-height: 1.9;
     }
     .instructions strong { color: var(--text); }
-    .instructions ol { padding-left: 16px; margin-top: 6px; }
-
-    /* ── Divider ── */
-    .divider {
-      display: flex; align-items: center; gap: 10px;
-      margin: 20px 0; color: var(--text3); font-size: 11px;
-    }
-    .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
+    .instructions ol { padding-left: 18px; margin-top: 8px; }
+    .instructions li { margin-bottom: 4px; }
+    .instructions code {
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent2);
     }
 
-    /* ── Spinner ── */
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      display: none;
+    /* ── Contact footer ── */
+    .contact-section {
+      text-align: center; padding: 32px 0 8px;
     }
+    .contact-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px; font-weight: 700; margin-bottom: 6px;
+    }
+    .contact-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+    .contact-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      border-radius: 100px; font-size: 13px; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+    }
+    .contact-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.3); opacity: .9; }
+    .btn-linkedin { background: #0a66c2; color: white; }
+    .btn-email    { background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.35); color: var(--accent2); }
+    .contact-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-    /* ── Footer ── */
-    .footer {
+    .page-footer {
       text-align: center; margin-top: 24px;
       font-size: 11px; color: var(--text3);
     }
-    .footer a { color: var(--text2); text-decoration: none; }
-    .footer a:hover { color: var(--text); }
+    .page-footer a { color: var(--text3); text-decoration: none; transition: color .15s; }
+    .page-footer a:hover { color: var(--text2); }
 
-    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes spin   { to { transform: rotate(360deg); } }
+    /* ── Animations ── */
+    @keyframes pageIn    { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes sectionIn { from { opacity:0; transform:translateY(8px);  } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin      { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .page { padding: 32px 16px 48px; }
+      .glass-card { padding: 28px 20px; }
+      .how-steps { grid-template-columns: 1fr; gap: 10px; }
+      .form-row  { grid-template-columns: 1fr; }
+      .contact-btns { flex-direction: column; align-items: center; }
+      .st-line { min-width: 28px; }
+    }
   </style>
 </head>
 <body>
-<div class="card">
+<div class="page">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo-wrap">🚀</div>
-    <h1>Adobe Launch MCP Server</h1>
-    <p>Connect any AI assistant to Adobe Experience Platform Tags.<br>Fill in your details to request access.</p>
+  <!-- ══ HERO ══ -->
+  <div class="hero">
+    <div class="hero-badge"><span></span> MCP Server · Adobe Launch</div>
+    <h1>Connect Your AI to<br>Adobe Experience Platform</h1>
+    <p>Register once, get a personal MCP URL, and start managing tags, rules, and data elements through any AI assistant — Claude, ChatGPT, Cursor, and more.</p>
   </div>
 
-  <!-- Step indicator -->
-  <div class="steps">
-    <div class="step active" id="step1">
-      <div class="step-dot">1</div>
-      <div class="step-label">Register</div>
-    </div>
-    <div class="step-line" id="line1"></div>
-    <div class="step active" id="step2">
-      <div class="step-dot">2</div>
-      <div class="step-label">Verify</div>
-    </div>
-    <div class="step-line" id="line2"></div>
-    <div class="step" id="step3">
-      <div class="step-dot">3</div>
-      <div class="step-label">Connect</div>
+  <!-- ══ HOW IT WORKS ══ -->
+  <div class="how-section">
+    <div class="section-label">How it works</div>
+    <div class="how-steps">
+      <div class="how-card active-step" id="howCard1">
+        <span class="how-icon">✏️</span>
+        <div class="how-num">1</div>
+        <div class="how-title">Fill the Form</div>
+        <div class="how-desc">Tell us who you are and how you plan to use the MCP server.</div>
+      </div>
+      <div class="how-card" id="howCard2">
+        <span class="how-icon">🔑</span>
+        <div class="how-num">2</div>
+        <div class="how-title">Add Credentials</div>
+        <div class="how-desc">Enter your Adobe OAuth credentials to validate and generate your session.</div>
+      </div>
+      <div class="how-card" id="howCard3">
+        <span class="how-icon">🔌</span>
+        <div class="how-num">3</div>
+        <div class="how-title">Connect & Use</div>
+        <div class="how-desc">Paste your personal MCP URL into any AI client and start using 74 tools.</div>
+      </div>
     </div>
   </div>
 
-  <!-- ── SECTION 1: Registration ── -->
-  <div class="form-section active" id="sectionRegister">
-    <div class="section-title">Tell us about yourself</div>
-    <div class="section-sub">This helps us understand who is using the MCP server and reach out if needed.</div>
+  <!-- ══ GLASS CARD ══ -->
+  <div class="glass-card">
 
-    <div id="alertRegister" class="alert"></div>
+    <!-- Progress stepper -->
+    <div class="stepper">
+      <div class="st-step active" id="step1">
+        <div class="st-dot">1</div>
+        <div class="st-label">Register</div>
+      </div>
+      <div class="st-line" id="line1"></div>
+      <div class="st-step" id="step2">
+        <div class="st-dot">2</div>
+        <div class="st-label">Credentials</div>
+      </div>
+      <div class="st-line" id="line2"></div>
+      <div class="st-step" id="step3">
+        <div class="st-dot">3</div>
+        <div class="st-label">Connect</div>
+      </div>
+    </div>
 
-    <form id="registerForm">
-      <div class="form-row">
+    <!-- ── SECTION 1: Registration ── -->
+    <div class="form-section active" id="sectionRegister">
+      <div class="form-heading">Tell us about yourself</div>
+      <div class="form-sub">This helps us understand who is using the server and reach out if needed. Takes 60 seconds.</div>
+
+      <div id="alertRegister" class="alert"></div>
+
+      <form id="registerForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="regName" placeholder="Jane Smith" required>
+          </div>
+          <div class="form-group">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="regEmail" placeholder="jane@company.com" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Company / Organization <span class="req">*</span></label>
+            <input type="text" id="regCompany" placeholder="Acme Corp" required>
+          </div>
+          <div class="form-group">
+            <label>Job Title</label>
+            <input type="text" id="regTitle" placeholder="Analytics Engineer">
+          </div>
+        </div>
+
         <div class="form-group">
-          <label>Full Name <span class="req">*</span></label>
-          <input type="text" id="regName" placeholder="Jane Smith" required>
+          <label>How will you use this MCP? <span class="req">*</span></label>
+          <select id="regUseCase" required>
+            <option value="" disabled selected>Select a use case…</option>
+            <option value="manage_tags">Manage tags &amp; rules via AI</option>
+            <option value="automate_publishing">Automate library publishing</option>
+            <option value="audit_properties">Audit properties &amp; data elements</option>
+            <option value="team_workflow">Team workflow automation</option>
+            <option value="learning">Learning / exploration</option>
+            <option value="other">Other</option>
+          </select>
         </div>
+
         <div class="form-group">
-          <label>Email <span class="req">*</span></label>
-          <input type="email" id="regEmail" placeholder="jane@company.com" required>
+          <label>Brief description <span class="req">*</span></label>
+          <textarea id="regDescription" placeholder="Describe what you're building or trying to accomplish…" required></textarea>
         </div>
-      </div>
 
-      <div class="form-row">
         <div class="form-group">
-          <label>Company / Organization <span class="req">*</span></label>
-          <input type="text" id="regCompany" placeholder="Acme Corp" required>
+          <label>How did you hear about this?</label>
+          <select id="regSource">
+            <option value="" disabled selected>Select…</option>
+            <option value="colleague">Colleague / referral</option>
+            <option value="github">GitHub</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="adobe_community">Adobe Community</option>
+            <option value="search">Web search</option>
+            <option value="other">Other</option>
+          </select>
         </div>
-        <div class="form-group">
-          <label>Job Title</label>
-          <input type="text" id="regTitle" placeholder="Analytics Engineer">
-        </div>
-      </div>
 
-      <div class="form-group">
-        <label>How will you use this MCP? <span class="req">*</span></label>
-        <select id="regUseCase" required>
-          <option value="" disabled selected>Select a use case…</option>
-          <option value="manage_tags">Manage tags & rules via AI</option>
-          <option value="automate_publishing">Automate library publishing</option>
-          <option value="audit_properties">Audit properties & data elements</option>
-          <option value="team_workflow">Team workflow automation</option>
-          <option value="learning">Learning / exploration</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Brief description <span class="req">*</span></label>
-        <textarea id="regDescription" placeholder="Describe what you're building or trying to accomplish…" required></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>How did you hear about this?</label>
-        <select id="regSource">
-          <option value="" disabled selected>Select…</option>
-          <option value="colleague">Colleague / referral</option>
-          <option value="github">GitHub</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="adobe_community">Adobe Community</option>
-          <option value="search">Web search</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn btn-primary" id="btnRegister">
-        <span id="spinnerRegister" class="spinner"></span>
-        <span id="btnRegisterText">Submit Registration</span>
-      </button>
-    </form>
-  </div>
-
-  <!-- ── SECTION 2: Password + Adobe Credentials ── -->
-  <div class="form-section" id="sectionConfig">
-    <div class="section-title">Enter your access password</div>
-    <div class="section-sub">You should have received a password from the server admin. Enter it along with your Adobe credentials to generate your personal MCP URL.</div>
-
-    <div id="alertConfig" class="alert"></div>
-
-    <form id="configForm">
-      <div class="form-group">
-        <label>Access Password <span class="req">*</span></label>
-        <div class="pw-wrap">
-          <input type="password" id="cfgPassword" placeholder="Enter the password provided to you" required>
-          <button type="button" class="pw-toggle" onclick="togglePw('cfgPassword', this)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="divider">Adobe Credentials</div>
-
-      <div class="form-group">
-        <label>Client ID <span class="req">*</span></label>
-        <input type="text" id="cfgClientId" placeholder="Your Adobe Client ID" required>
-        <div style="font-size:11px;color:var(--text3);margin-top:5px;">
-          Get from <a href="https://developer.adobe.com/console" target="_blank" style="color:var(--text2);">Adobe Developer Console</a> → Your Project → Credentials
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Client Secret <span class="req">*</span></label>
-        <div class="pw-wrap">
-          <input type="password" id="cfgClientSecret" placeholder="Your Adobe Client Secret" required>
-          <button type="button" class="pw-toggle" onclick="togglePw('cfgClientSecret', this)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Organization ID <span class="req">*</span></label>
-        <input type="text" id="cfgOrgId" placeholder="ABC123@AdobeOrg" required>
-        <div style="font-size:11px;color:var(--text3);margin-top:5px;">Format: YOUR_ORG_ID@AdobeOrg</div>
-      </div>
-
-      <button type="button" class="btn btn-ghost" onclick="goBack()">← Back</button>
-      <button type="submit" class="btn btn-primary" id="btnConfig">
-        <span id="spinnerConfig" class="spinner"></span>
-        <span id="btnConfigText">Validate & Generate MCP URL</span>
-      </button>
-    </form>
-  </div>
-
-  <!-- ── SECTION 3: Success ── -->
-  <div class="form-section" id="sectionSuccess">
-    <div class="result-box">
-      <h3>✅ Your MCP Server is Ready</h3>
-      <p>Copy this URL and paste it into your AI client (Claude, Cursor, Kiro, ChatGPT Desktop, etc.)</p>
-      <div class="url-row">
-        <div class="url-display" id="urlDisplay">—</div>
-        <button class="copy-btn" onclick="copyUrl()">Copy</button>
-      </div>
+        <button type="submit" class="btn btn-primary" id="btnRegister">
+          <span id="spinnerRegister" class="spinner"></span>
+          <span id="btnRegisterText">Continue to Credentials →</span>
+        </button>
+      </form>
     </div>
 
-    <div class="instructions">
-      <strong>How to connect:</strong>
-      <ol>
-        <li><strong>Claude.ai</strong> → Settings → Connectors → + → Create app → paste URL</li>
-        <li><strong>ChatGPT Desktop</strong> → Settings → Connect to custom MCP → Streamable HTTP → paste URL</li>
-        <li><strong>Cursor / Kiro / Windsurf</strong> → MCP config → <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px;">{ "url": "YOUR_URL" }</code></li>
-      </ol>
+    <!-- ── SECTION 2: Adobe Credentials ── -->
+    <div class="form-section" id="sectionConfig">
+      <div class="form-heading">Enter your Adobe credentials</div>
+      <div class="form-sub">Your credentials are used only to validate your Adobe account and generate a session token. They are never stored.</div>
+
+      <div id="alertConfig" class="alert"></div>
+
+      <form id="configForm">
+        <div class="form-group">
+          <label>Client ID <span class="req">*</span></label>
+          <input type="text" id="cfgClientId" placeholder="Your Adobe Client ID" required>
+          <div class="field-hint">Get from <a href="https://developer.adobe.com/console" target="_blank">Adobe Developer Console</a> → Your Project → Credentials</div>
+        </div>
+
+        <div class="form-group">
+          <label>Client Secret <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="cfgClientSecret" placeholder="Your Adobe Client Secret" required>
+            <button type="button" class="pw-toggle" onclick="togglePw('cfgClientSecret', this)" aria-label="Toggle visibility">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Organization ID <span class="req">*</span></label>
+          <input type="text" id="cfgOrgId" placeholder="ABC123@AdobeOrg" required>
+          <div class="field-hint">Format: YOUR_ORG_ID@AdobeOrg</div>
+        </div>
+
+        <button type="button" class="btn btn-ghost" onclick="goBack()">← Back</button>
+        <button type="submit" class="btn btn-primary" id="btnConfig">
+          <span id="spinnerConfig" class="spinner"></span>
+          <span id="btnConfigText">Validate &amp; Generate MCP URL →</span>
+        </button>
+      </form>
     </div>
 
-    <div id="alertSuccess" class="alert" style="margin-top:16px;"></div>
+    <!-- ── SECTION 3: Success ── -->
+    <div class="form-section" id="sectionSuccess">
+      <div class="result-box">
+        <h3>✅ Your MCP Server is Ready</h3>
+        <p>Copy this URL and paste it into your AI client — Claude, ChatGPT Desktop, Cursor, Kiro, Windsurf, or any MCP-compatible tool.</p>
+        <div class="url-row">
+          <div class="url-display" id="urlDisplay">—</div>
+          <button class="copy-btn" onclick="copyUrl()">Copy</button>
+        </div>
+      </div>
 
-    <button class="btn btn-ghost" style="margin-top:16px;" onclick="startOver()">Configure another session</button>
+      <div class="instructions">
+        <strong>How to connect:</strong>
+        <ol>
+          <li><strong>Claude.ai</strong> → Settings → Connectors → + → Create app → paste URL</li>
+          <li><strong>ChatGPT Desktop</strong> → Settings → Connect to custom MCP → Streamable HTTP → paste URL</li>
+          <li><strong>Cursor / Kiro / Windsurf</strong> → MCP config → <code>{ "url": "YOUR_URL" }</code></li>
+        </ol>
+      </div>
+
+      <div id="alertSuccess" class="alert" style="margin-top:16px;"></div>
+
+      <button class="btn btn-ghost" style="margin-top:16px;" onclick="startOver()">Configure another session</button>
+    </div>
+
+  </div><!-- /glass-card -->
+
+  <!-- ══ CONTACT FOOTER ══ -->
+  <div class="contact-section">
+    <div class="contact-title">Built by Vedant Pandey</div>
+    <div class="contact-sub">Have questions or want to collaborate? Let's connect.</div>
+    <div class="contact-btns">
+      <a href="https://www.linkedin.com/in/vedant-pandey7/" target="_blank" class="contact-btn btn-linkedin">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn
+      </a>
+      <a href="mailto:pvedant1262@gmail.com" class="contact-btn btn-email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        pvedant1262@gmail.com
+      </a>
+    </div>
   </div>
 
-  <div class="footer">
-    Built on <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol</a> ·
+  <div class="page-footer">
+    Built on <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol</a> &nbsp;·&nbsp;
     <a href="https://developer.adobe.com/console" target="_blank">Adobe Developer Console</a>
   </div>
-</div>
+
+</div><!-- /page -->
 
 <script>
-  // ── State ──
-  let currentSection = 'register'; // 'register' | 'config' | 'success'
   let registrationData = null;
 
-  // ── Step helpers ──
-  function setSteps(active) {
-    // active: 1=register, 2=config, 3=success
-    const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
-    const lines = [document.getElementById('line1'), document.getElementById('line2')];
-    steps.forEach((s, i) => {
-      s.classList.remove('active', 'done');
-      if (i + 1 < active) s.classList.add('done');
-      else if (i + 1 === active) s.classList.add('active');
-    });
-    lines.forEach((l, i) => {
-      l.classList.toggle('done', i + 1 < active);
-    });
-    // Update dot content for done steps
-    steps.forEach((s, i) => {
-      const dot = s.querySelector('.step-dot');
-      if (s.classList.contains('done')) dot.textContent = '✓';
-      else dot.textContent = i + 1;
+  /* ── How-it-works card highlight ── */
+  function setHowStep(n) {
+    [1,2,3].forEach(i => {
+      const c = document.getElementById('howCard' + i);
+      if (c) c.classList.toggle('active-step', i === n);
     });
   }
 
+  /* ── Progress stepper ── */
+  function setSteps(active) {
+    [1,2,3].forEach(i => {
+      const s = document.getElementById('step' + i);
+      const dot = s.querySelector('.st-dot');
+      s.classList.remove('active','done');
+      if (i < active)      { s.classList.add('done');   dot.innerHTML = '✓'; }
+      else if (i === active){ s.classList.add('active'); dot.textContent = i; }
+      else                  { dot.textContent = i; }
+    });
+    [1,2].forEach(i => {
+      const l = document.getElementById('line' + i);
+      l.classList.toggle('done', i < active);
+    });
+  }
+
+  /* ── Section switching ── */
   function showSection(name) {
     document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
     document.getElementById('section' + name).classList.add('active');
-    currentSection = name.toLowerCase();
-    if (name === 'Register') setSteps(1);
-    if (name === 'Config')   setSteps(2);
-    if (name === 'Success')  setSteps(3);
+    window.scrollTo({ top: document.querySelector('.glass-card').offsetTop - 24, behavior: 'smooth' });
+    if (name === 'Register') { setSteps(1); setHowStep(1); }
+    if (name === 'Config')   { setSteps(2); setHowStep(2); }
+    if (name === 'Success')  { setSteps(3); setHowStep(3); }
   }
 
-  function goBack() { showSection('Register'); }
-  function startOver() { showSection('Register'); document.getElementById('registerForm').reset(); }
+  function goBack()    { showSection('Register'); }
+  function startOver() { showSection('Register'); document.getElementById('registerForm').reset(); registrationData = null; }
 
-  // ── Alert helpers ──
+  /* ── Alerts ── */
   function showAlert(id, msg, type) {
     const el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = `alert ${type}`;
-    el.style.display = 'block';
+    el.textContent = msg; el.className = 'alert ' + type; el.style.display = 'block';
   }
-  function hideAlert(id) {
-    document.getElementById(id).style.display = 'none';
-  }
+  function hideAlert(id) { document.getElementById(id).style.display = 'none'; }
 
-  // ── Loading state ──
-  function setLoading(btnId, spinnerId, textId, loading, text) {
-    document.getElementById(btnId).disabled = loading;
-    document.getElementById(spinnerId).style.display = loading ? 'block' : 'none';
+  /* ── Loading ── */
+  function setLoading(btnId, spinnerId, textId, on, text) {
+    document.getElementById(btnId).disabled = on;
+    document.getElementById(spinnerId).style.display = on ? 'inline-block' : 'none';
     document.getElementById(textId).textContent = text;
   }
 
-  // ── Toggle password visibility ──
-  function togglePw(inputId, btn) {
-    const input = document.getElementById(inputId);
-    const isText = input.type === 'text';
-    input.type = isText ? 'password' : 'text';
-    btn.innerHTML = isText
-      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  /* ── Password toggle ── */
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.innerHTML = show
+      ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
   }
 
-  // ── Step 1: Registration ──
+  /* ── Step 1: Registration ── */
   document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert('alertRegister');
@@ -509,91 +647,82 @@
     const source      = document.getElementById('regSource').value;
 
     if (!name || !email || !company || !useCase || !description) {
-      showAlert('alertRegister', 'Please fill in all required fields.', 'error');
-      return;
+      showAlert('alertRegister', 'Please fill in all required fields.', 'error'); return;
     }
 
-    setLoading('btnRegister', 'spinnerRegister', 'btnRegisterText', true, 'Submitting…');
+    setLoading('btnRegister','spinnerRegister','btnRegisterText', true, 'Saving…');
 
     try {
       const res  = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, company, title, useCase, description, source }),
       });
       const data = await res.json();
-
       if (res.ok) {
         registrationData = { name, email, company };
         showSection('Config');
-        showAlert('alertConfig', `Welcome, ${name}! Enter the access password provided by the admin, then your Adobe credentials.`, 'info');
+        showAlert('alertConfig', `Welcome, ${name}! Enter your Adobe credentials below to generate your MCP URL.`, 'info');
       } else {
         showAlert('alertRegister', data.error || 'Registration failed. Please try again.', 'error');
       }
-    } catch (err) {
+    } catch {
       showAlert('alertRegister', 'Network error. Please check your connection.', 'error');
     } finally {
-      setLoading('btnRegister', 'spinnerRegister', 'btnRegisterText', false, 'Submit Registration');
+      setLoading('btnRegister','spinnerRegister','btnRegisterText', false, 'Continue to Credentials →');
     }
   });
 
-  // ── Step 2: Password + Adobe credentials ──
+  /* ── Step 2: Adobe credentials ── */
   document.getElementById('configForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert('alertConfig');
 
-    const password     = document.getElementById('cfgPassword').value.trim();
     const clientId     = document.getElementById('cfgClientId').value.trim();
     const clientSecret = document.getElementById('cfgClientSecret').value.trim();
     const orgId        = document.getElementById('cfgOrgId').value.trim();
 
-    if (!password || !clientId || !clientSecret || !orgId) {
-      showAlert('alertConfig', 'All fields are required.', 'error');
-      return;
+    if (!clientId || !clientSecret || !orgId) {
+      showAlert('alertConfig', 'All fields are required.', 'error'); return;
     }
     if (!orgId.includes('@AdobeOrg')) {
-      showAlert('alertConfig', 'Organization ID must be in format: YOUR_ORG_ID@AdobeOrg', 'error');
-      return;
+      showAlert('alertConfig', 'Organization ID must be in format: YOUR_ORG_ID@AdobeOrg', 'error'); return;
     }
 
-    setLoading('btnConfig', 'spinnerConfig', 'btnConfigText', true, 'Validating…');
+    setLoading('btnConfig','spinnerConfig','btnConfigText', true, 'Validating with Adobe…');
 
     try {
       const res  = await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, clientId, clientSecret, orgId, ...registrationData }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId, clientSecret, orgId, ...(registrationData || {}) }),
       });
       const data = await res.json();
-
       if (res.ok) {
         document.getElementById('urlDisplay').textContent = data.mcpUrl;
         showSection('Success');
-        if (data.warning) {
-          showAlert('alertSuccess', '⚠️ ' + data.warning, 'warning');
-        }
+        if (data.warning) showAlert('alertSuccess', '⚠️ ' + data.warning, 'warning');
       } else {
         showAlert('alertConfig', data.error || 'Configuration failed. Please check your credentials.', 'error');
       }
-    } catch (err) {
+    } catch {
       showAlert('alertConfig', 'Network error. Please check your connection.', 'error');
     } finally {
-      setLoading('btnConfig', 'spinnerConfig', 'btnConfigText', false, 'Validate & Generate MCP URL');
+      setLoading('btnConfig','spinnerConfig','btnConfigText', false, 'Validate & Generate MCP URL →');
     }
   });
 
-  // ── Copy URL ──
+  /* ── Copy URL ── */
   function copyUrl() {
     const url = document.getElementById('urlDisplay').textContent;
     navigator.clipboard.writeText(url).then(() => {
       const btn = document.querySelector('.copy-btn');
+      const orig = btn.textContent;
       btn.textContent = 'Copied ✓';
       btn.style.background = '#16a34a';
-      setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = ''; }, 2000);
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2200);
     });
   }
 
-  // ── Init: check if already configured ──
+  /* ── Init ── */
   window.addEventListener('load', async () => {
     try {
       const res  = await fetch('/api/config/status');

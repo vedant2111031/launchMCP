@@ -162,19 +162,7 @@ app.get("/api/config/status", (req, res) => {
 
 // ─── POST /api/config — validate credentials & create session ─────────────────
 app.post("/api/config", async (req, res) => {
-  const { clientId, clientSecret, orgId, password } = req.body;
-
-  // ── Password gate ──────────────────────────────────────────────────────────
-  const ACCESS_PASSWORD = process.env.ACCESS_PASSWORD;
-  if (ACCESS_PASSWORD) {
-    if (!password) {
-      return res.status(401).json({ error: "Access password is required." });
-    }
-    if (password !== ACCESS_PASSWORD) {
-      console.log(`[AUTH] Wrong password attempt from ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
-      return res.status(401).json({ error: "Incorrect access password. Please contact the admin." });
-    }
-  }
+  const { clientId, clientSecret, orgId } = req.body;
 
   if (!clientId || !clientSecret || !orgId) {
     return res.status(400).json({ error: "All fields are required" });
