@@ -341,6 +341,14 @@
     .page-footer a { color: var(--text3); text-decoration: none; transition: color .15s; }
     .page-footer a:hover { color: var(--text2); }
 
+    .disclaimer {
+      text-align: center; margin-top: 16px;
+      font-size: 10px; color: var(--text3);
+      line-height: 1.6; max-width: 480px; margin-left: auto; margin-right: auto;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+    }
+
     /* ── Animations ── */
     @keyframes pageIn    { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
     @keyframes sectionIn { from { opacity:0; transform:translateY(8px);  } to { opacity:1; transform:translateY(0); } }
@@ -565,6 +573,10 @@
   <div class="page-footer">
     Built on <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol</a> &nbsp;·&nbsp;
     <a href="https://developer.adobe.com/console" target="_blank">Adobe Developer Console</a>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ This platform is in beta. Features may be unstable. Not recommended for production-critical workflows. Use at your own risk.
   </div>
 
 </div><!-- /page -->
