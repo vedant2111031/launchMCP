@@ -210,12 +210,17 @@
       </div>
       
       <div class="instructions">
-        <h4>📋 How to Connect:</h4>
-        <p><strong>Claude Desktop:</strong> Add to <code>claude_desktop_config.json</code></p>
-        <p><strong>Cursor:</strong> Add to <code>.cursor/mcp.json</code></p>
-        <p><strong>Kiro:</strong> Add to <code>.kiro/settings/mcp.json</code></p>
-        <p style="margin-top: 8px; font-size: 12px;">
-          Example: <code>{ "mcpServers": { "adobe-launch": { "url": "YOUR_URL" } } }</code>
+        <h4>📋 How to Connect to Claude.ai (Connectors):</h4>
+        <ol style="margin-left: 16px; margin-top: 6px; line-height: 1.8;">
+          <li>Go to <a href="https://claude.ai" target="_blank" class="help-link" style="color:#856404">claude.ai</a> and sign in</li>
+          <li>In the left sidebar, click the <strong>Customize</strong> icon</li>
+          <li>Select <strong>Connectors</strong>, then click the <strong>+</strong> icon</li>
+          <li>Click <strong>Create app</strong></li>
+          <li>Give it a name (e.g. <em>Adobe Launch</em>) and paste the MCP URL above</li>
+          <li>Click <strong>Add</strong> — done!</li>
+        </ol>
+        <p style="margin-top: 10px; font-size: 12px;">
+          <strong>Other clients:</strong> Cursor / Kiro / Windsurf — add <code>{ "url": "YOUR_URL" }</code> to your MCP config file.
         </p>
       </div>
     </div>

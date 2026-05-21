@@ -87,7 +87,7 @@ app.all("/mcp", async (req, res) => {
       return res.status(400).json({ error: "Bad request: missing or invalid session" });
     }
 
-    await transport.handleRequest(req, res);
+    await transport.handleRequest(req, res, req.body);
   } catch (err) {
     console.error("[HTTP] Error:", err.message);
     if (!res.headersSent) res.status(500).json({ error: err.message });

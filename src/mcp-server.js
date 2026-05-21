@@ -28,125 +28,96 @@ const dbg = {
 
 // ─── Env validation ───────────────────────────────────────────────────────────
 
-const REQUIRED_ENV = ["CLIENT_ID", "CLIENT_SECRET", "ORG_ID"];
-const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
-// Only exit if this is being run directly (not imported by config-server)
-if (missing.length && !process.env.SKIP_ENV_VALIDATION) {
-  dbg.error(`Missing required env vars: ${missing.join(", ")}`);
-  // Don't exit if we're being imported dynamically
-  if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
-    process.exit(1);
-  }
-}
-
-const CLIENT_ID     = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const ORG_ID        = process.env.ORG_ID;
-const SCOPES = process.env.SCOPES || "AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles";
 const REACTOR_BASE  = "https://reactor.adobe.io";
 const IMS_TOKEN_URL = "https://ims-na1.adobelogin.com/ims/token/v3";
 
-// Startup logging moved to individual transport files
-
-// ─── Token cache ──────────────────────────────────────────────────────────────
-
-let _tokenCache = { token: null, expiresAt: 0 };
-
-async function getAccessToken() {
-  const now = Date.now();
-  if (_tokenCache.token && now < _tokenCache.expiresAt - 60_000) {
-    const remainSec = Math.round((_tokenCache.expiresAt - now) / 1000);
-    dbg.verbose(`Token cache hit — expires in ${remainSec}s`);
-    return _tokenCache.token;
-  }
-
-  dbg.info("🔑 Fetching new Adobe IMS access token...");
-  const t0 = Date.now();
-  const params = new URLSearchParams({
-    grant_type:    "client_credentials",
-    client_id:     CLIENT_ID,
-    client_secret: CLIENT_SECRET,
-    scope:         SCOPES,
-  });
-
-  try {
-    const res = await axios.post(IMS_TOKEN_URL, params.toString(), {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
-
-    _tokenCache = {
-      token:     res.data.access_token,
-      expiresAt: now + res.data.expires_in * 1000,
-    };
-
-    // Decode scope from JWT payload for debug
-    try {
-      const payload = JSON.parse(Buffer.from(res.data.access_token.split(".")[1], "base64").toString());
-      dbg.info(`✅ Token acquired in ${Date.now() - t0}ms`);
-      dbg.info(`   scope     : ${payload.scope}`);
-      dbg.info(`   client_id : ${payload.client_id}`);
-      dbg.info(`   expires   : ${Math.round(res.data.expires_in / 3600)}h`);
-      if (!payload.scope?.includes("reactor")) {
-        dbg.error("⚠️  WARNING: Token scope does NOT include 'reactor'.");
-        dbg.error("   Reactor API calls will return 403 api-key-invalid.");
-        dbg.error("   Fix: Add 'Experience Platform Launch API' to your credential");
-        dbg.error("   at https://developer.adobe.com/console");
-      }
-    } catch { /* JWT decode is best-effort */ }
-
-    return _tokenCache.token;
-  } catch (err) {
-    dbg.error(`IMS token fetch failed in ${Date.now() - t0}ms:`, err.response?.data || err.message);
-    throw err;
-  }
-}
-
-// ─── Reactor API helper ───────────────────────────────────────────────────────
-
-async function reactor(method, path, data = null, params = {}) {
-  const token = await getAccessToken();
-  const url   = `${REACTOR_BASE}${path}`;
-  const headers = {
-    Authorization:      `Bearer ${token}`,
-    "x-api-key":        CLIENT_ID,
-    "x-gw-ims-org-id":  ORG_ID,
-    "Content-Type":     "application/vnd.api+json",
-    Accept:             "application/vnd.api+json;revision=1",
-  };
-
-  dbg.verbose(`→ ${method.toUpperCase()} ${path}`, params && Object.keys(params).length ? params : "");
-  if (data && DEBUG) dbg.verbose("  body:", JSON.stringify(data).slice(0, 300));
-
-  const t0 = Date.now();
-  try {
-    const res = await axios({ method, url, headers, data, params });
-    const ms  = Date.now() - t0;
-    dbg.http(method, path, res.status, ms);
-
-    // Log response summary
-    const d = res.data?.data;
-    if (Array.isArray(d))      dbg.verbose(`  ← ${d.length} items`);
-    else if (d?.id)            dbg.verbose(`  ← id: ${d.id} type: ${d.type}`);
-
-    return res.data;
-  } catch (err) {
-    const ms     = Date.now() - t0;
-    const status = err.response?.status || "ERR";
-    const body   = err.response?.data;
-    dbg.http(method, path, status, ms);
-
-    if (body?.errors) {
-      const msgs = body.errors.map((e) => `[${e.status}] ${e.title}: ${e.code}`).join("; ");
-      dbg.error(`Reactor error on ${method.toUpperCase()} ${path}: ${msgs}`);
-      throw new Error(`Reactor API ${status}: ${msgs}`);
-    }
-    dbg.error(`Reactor error on ${method.toUpperCase()} ${path}:`, body || err.message);
-    throw new Error(body ? JSON.stringify(body) : err.message);
-  }
-}
-
 // ─── MCP Server Factory ───────────────────────────────────────────────────────
-export async function buildMcpServer() {
+// Accepts optional credentials object; falls back to env vars (stdio / http-server usage).
+export async function buildMcpServer(credentials = {}) {
+  const CLIENT_ID     = credentials.clientId     || process.env.CLIENT_ID;
+  const CLIENT_SECRET = credentials.clientSecret || process.env.CLIENT_SECRET;
+  const ORG_ID        = credentials.orgId        || process.env.ORG_ID;
+  const SCOPES = process.env.SCOPES || "AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles";
+
+  // ─── Token cache (per server instance) ──────────────────────────────────────
+  let _tokenCache = { token: null, expiresAt: 0 };
+
+  async function getAccessToken() {
+    const now = Date.now();
+    if (_tokenCache.token && now < _tokenCache.expiresAt - 60_000) {
+      dbg.verbose(`Token cache hit — expires in ${Math.round((_tokenCache.expiresAt - now) / 1000)}s`);
+      return _tokenCache.token;
+    }
+    dbg.info("🔑 Fetching new Adobe IMS access token...");
+    const t0 = Date.now();
+    const params = new URLSearchParams({
+      grant_type:    "client_credentials",
+      client_id:     CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      scope:         SCOPES,
+    });
+    try {
+      const res = await axios.post(IMS_TOKEN_URL, params.toString(), {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+      _tokenCache = { token: res.data.access_token, expiresAt: now + res.data.expires_in * 1000 };
+      try {
+        const payload = JSON.parse(Buffer.from(res.data.access_token.split(".")[1], "base64").toString());
+        dbg.info(`✅ Token acquired in ${Date.now() - t0}ms`);
+        dbg.info(`   scope     : ${payload.scope}`);
+        dbg.info(`   client_id : ${payload.client_id}`);
+        dbg.info(`   expires   : ${Math.round(res.data.expires_in / 3600)}h`);
+        if (!payload.scope?.includes("reactor")) {
+          dbg.error("⚠️  WARNING: Token scope does NOT include 'reactor'.");
+          dbg.error("   Reactor API calls will return 403 api-key-invalid.");
+          dbg.error("   Fix: Add 'Experience Platform Launch API' to your credential");
+          dbg.error("   at https://developer.adobe.com/console");
+        }
+      } catch { /* JWT decode is best-effort */ }
+      return _tokenCache.token;
+    } catch (err) {
+      dbg.error(`IMS token fetch failed in ${Date.now() - t0}ms:`, err.response?.data || err.message);
+      throw err;
+    }
+  }
+
+  // ─── Reactor API helper ──────────────────────────────────────────────────────
+  async function reactor(method, path, data = null, params = {}) {
+    const token = await getAccessToken();
+    const url   = `${REACTOR_BASE}${path}`;
+    const headers = {
+      Authorization:      `Bearer ${token}`,
+      "x-api-key":        CLIENT_ID,
+      "x-gw-ims-org-id":  ORG_ID,
+      "Content-Type":     "application/vnd.api+json",
+      Accept:             "application/vnd.api+json;revision=1",
+    };
+    dbg.verbose(`→ ${method.toUpperCase()} ${path}`, params && Object.keys(params).length ? params : "");
+    if (data && DEBUG) dbg.verbose("  body:", JSON.stringify(data).slice(0, 300));
+    const t0 = Date.now();
+    try {
+      const res = await axios({ method, url, headers, data, params });
+      const ms  = Date.now() - t0;
+      dbg.http(method, path, res.status, ms);
+      const d = res.data?.data;
+      if (Array.isArray(d))  dbg.verbose(`  ← ${d.length} items`);
+      else if (d?.id)        dbg.verbose(`  ← id: ${d.id} type: ${d.type}`);
+      return res.data;
+    } catch (err) {
+      const ms     = Date.now() - t0;
+      const status = err.response?.status || "ERR";
+      const body   = err.response?.data;
+      dbg.http(method, path, status, ms);
+      if (body?.errors) {
+        const msgs = body.errors.map((e) => `[${e.status}] ${e.title}: ${e.code}`).join("; ");
+        dbg.error(`Reactor error on ${method.toUpperCase()} ${path}: ${msgs}`);
+        throw new Error(`Reactor API ${status}: ${msgs}`);
+      }
+      dbg.error(`Reactor error on ${method.toUpperCase()} ${path}:`, body || err.message);
+      throw new Error(body ? JSON.stringify(body) : err.message);
+    }
+  }
+
   const server = new McpServer({
     name:    "adobe-launch-mcp",
     version: "2.0.0",
