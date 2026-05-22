@@ -8,6 +8,7 @@ import "dotenv/config";
 import axios from "axios";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { registerAepTools } from "./aep-tools.js";
 
 // ─── Debug logger ─────────────────────────────────────────────────────────────
 // All MCP server logs go to stderr so they don't pollute the stdio MCP channel
@@ -1173,6 +1174,11 @@ tool("publish_all_changes", "Composite: create library with ALL unpublished rule
   };
   });
 
-  dbg.info("✅ Adobe Launch MCP server instance created with 74 tools");
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AEP (Adobe Experience Platform) TOOLS
+  // ═══════════════════════════════════════════════════════════════════════════
+  registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg, axios });
+
+  dbg.info("✅ Adobe Launch + AEP MCP server instance created (74 Reactor + 196 AEP = 270 tools total)");
   return server;
 }

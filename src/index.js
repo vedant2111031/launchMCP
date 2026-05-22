@@ -23,7 +23,7 @@ console.error("Adobe Launch MCP Server — stdio transport");
 console.error(`  CLIENT_ID : ${process.env.CLIENT_ID?.slice(0, 8)}...`);
 console.error(`  ORG_ID    : ${process.env.ORG_ID}`);
 console.error(`  DEBUG     : ${DEBUG}`);
-console.error(`  Tools     : 74`);
+console.error(`  Tools     : 74 Reactor + 196 AEP = 270 total`);
 console.error("━".repeat(60));
 
 const server = await buildMcpServer({

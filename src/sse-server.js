@@ -46,7 +46,7 @@ app.listen(PORT, () => {
   console.log("  Adobe Launch MCP — SSE Transport (legacy)");
   console.log("=".repeat(60));
   console.log(`  SSE endpoint : http://localhost:${PORT}/sse`);
-  console.log(`  Tools        : 74`);
+  console.log(`  Tools        : 74 Reactor + 196 AEP = 270 total`);
   console.log("=".repeat(60));
   console.log("  Connect: { \"url\": \"http://localhost:" + PORT + "/sse\" }");
   console.log("=".repeat(60));

@@ -83,6 +83,7 @@ async function validateAdobeCredentials(clientId, clientSecret, orgId) {
 // ─── Static UI ────────────────────────────────────────────────────────────────
 app.get("/",           (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "config.html")));
 app.get("/config",     (_req, res) => res.redirect("/"));
+app.get("/dashboard",  (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
 app.get("/style.css",  (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "style.css")));
 app.get("/app.js",     (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "app.js")));
 app.get("/sitemap.xml",(_req, res) => {
@@ -373,7 +374,7 @@ app.listen(PORT, () => {
   console.log(`  Config UI  : http://localhost:${PORT}/`);
   console.log(`  Health     : http://localhost:${PORT}/health`);
   console.log(`  MCP URL    : http://localhost:${PORT}/mcp/<sessionId>`);
-  console.log(`  Tools      : 74`);
+  console.log(`  Tools      : 74 Reactor + 196 AEP = 270 total`);
   console.log("=".repeat(70));
   console.log("  Claude.ai integration:");
   console.log("  1. Open the Config UI and enter your Adobe credentials");
