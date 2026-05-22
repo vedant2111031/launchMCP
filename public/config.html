@@ -400,6 +400,21 @@
       border-top: 1px solid var(--border);
     }
 
+    /* ── AI tabs ── */
+    .ai-tab {
+      padding: 6px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600; font-family: 'Sora', sans-serif;
+      color: var(--text2); cursor: pointer;
+      transition: all .18s;
+    }
+    .ai-tab:hover { border-color: var(--border2); color: var(--text); background: var(--bg4); }
+    .ai-tab.active { background: rgba(99,102,241,.15); border-color: rgba(99,102,241,.5); color: var(--accent2); }
+    .ai-tab-content { display: none; }
+    .ai-tab-content.active { display: block; }
+
     /* ── Animations ── */
     @keyframes pageIn    { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
     @keyframes sectionIn { from { opacity:0; transform:translateY(8px);  } to { opacity:1; transform:translateY(0); } }
@@ -600,6 +615,12 @@
           <label>Organization ID <span class="req">*</span></label>
           <input type="text" id="cfgOrgId" placeholder="ABC123@AdobeOrg" required>
           <div class="field-hint">Format: YOUR_ORG_ID@AdobeOrg</div>
+        </div>
+
+        <div class="form-group">
+          <label>AEP Sandbox Name</label>
+          <input type="text" id="cfgSandbox" placeholder="prod">
+          <div class="field-hint">The AEP sandbox to target for all AEP tool calls. Defaults to <strong>prod</strong> if left blank. Use a development sandbox name (e.g. <code>dev</code>) to avoid touching production data.</div>
         </div>
 
         <button type="button" class="btn btn-ghost" onclick="goBack()">← Back</button>
@@ -947,6 +968,7 @@
     const clientId     = document.getElementById('cfgClientId').value.trim();
     const clientSecret = document.getElementById('cfgClientSecret').value.trim();
     const orgId        = document.getElementById('cfgOrgId').value.trim();
+    const sandbox      = document.getElementById('cfgSandbox').value.trim() || 'prod';
 
     if (!clientId || !clientSecret || !orgId) {
       showAlert('alertConfig', 'All fields are required.', 'error'); return;
@@ -960,12 +982,17 @@
     try {
       const res  = await fetch('/api/config', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientId, clientSecret, orgId, ...(registrationData || {}) }),
+        body: JSON.stringify({ clientId, clientSecret, orgId, sandbox, ...(registrationData || {}) }),
       });
       const data = await res.json();
       if (res.ok) {
         document.getElementById('urlDisplay').textContent = data.mcpUrl;
         showSection('Success');
+        // Inject the real MCP URL into all config snippets
+        ['chatgpt-config','cursor-config','kiro-config','windsurf-config'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = el.textContent.replace(/YOUR_MCP_URL/g, data.mcpUrl);
+        });
         if (data.warning) showAlert('alertSuccess', '⚠️ ' + data.warning, 'warning');
       } else {
         showAlert('alertConfig', data.error || 'Configuration failed. Please check your credentials.', 'error');
@@ -976,6 +1003,43 @@
       setLoading('btnConfig','spinnerConfig','btnConfigText', false, 'Validate & Generate MCP URL →');
     }
   });
+
+  /* ── AI tab switcher ── */
+  function showAiTab(name, btn) {
+    // Hide all tab contents
+    document.querySelectorAll('.ai-tab-content').forEach(el => el.style.display = 'none');
+    // Deactivate all tab buttons
+    document.querySelectorAll('.ai-tab').forEach(el => el.classList.remove('active'));
+    // Show selected tab content
+    const content = document.getElementById('tab-' + name);
+    if (content) content.style.display = 'block';
+    // Activate clicked button
+    if (btn) btn.classList.add('active');
+    // Update config snippets with actual MCP URL
+    const mcpUrl = document.getElementById('urlDisplay').textContent;
+    if (mcpUrl && mcpUrl !== '—') {
+      ['chatgpt-config','cursor-config','kiro-config','windsurf-config'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = el.textContent.replace(/YOUR_MCP_URL/g, mcpUrl);
+      });
+    }
+  }
+
+  /* ── Copy JSON config snippet ── */
+  function copyConfig(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    navigator.clipboard.writeText(el.textContent).then(() => {
+      // Find the copy button that triggered this (closest sibling after the pre)
+      const btn = el.nextElementSibling;
+      if (btn && btn.classList.contains('copy-btn')) {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.style.background = '#16a34a';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2200);
+      }
+    });
+  }
 
   /* ── Copy URL ── */
   function copyUrl() {

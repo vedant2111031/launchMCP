@@ -238,7 +238,7 @@ app.get("/api/config/status", (req, res) => {
 
 // ─── POST /api/config — validate credentials & create session ─────────────────
 app.post("/api/config", async (req, res) => {
-  const { clientId, clientSecret, orgId } = req.body;
+  const { clientId, clientSecret, orgId, sandbox } = req.body;
 
   if (!clientId || !clientSecret || !orgId) {
     return res.status(400).json({ error: "All fields are required" });
@@ -247,7 +247,9 @@ app.post("/api/config", async (req, res) => {
     return res.status(400).json({ error: "Organization ID must be in format: YOUR_ORG_ID@AdobeOrg" });
   }
 
-  console.log(`[CONFIG] Validating credentials for org: ${orgId}`);
+  const sandboxName = (sandbox && sandbox.trim()) ? sandbox.trim() : (process.env.AEP_SANDBOX_NAME || "prod");
+
+  console.log(`[CONFIG] Validating credentials for org: ${orgId} sandbox: ${sandboxName}`);
   const validation = await validateAdobeCredentials(clientId, clientSecret, orgId);
   if (!validation.valid) {
     return res.status(401).json({ error: `Adobe authentication failed: ${validation.error}` });
@@ -257,11 +259,11 @@ app.post("/api/config", async (req, res) => {
 
   try {
     // Build a real MCP server with these credentials
-    const server = await buildMcpServerWithCredentials({ clientId, clientSecret, orgId });
+    const server = await buildMcpServerWithCredentials({ clientId, clientSecret, orgId, sandboxName });
 
     userSessions.set(sessionId, {
       orgId,
-      _credentials: { clientId, clientSecret, orgId },
+      _credentials: { clientId, clientSecret, orgId, sandboxName },
       server,
       mcpSessions: new Map(), // inner MCP SDK sessions keyed by mcp-session-id
       createdAt:  new Date(),

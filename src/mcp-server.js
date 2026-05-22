@@ -40,6 +40,11 @@ export async function buildMcpServer(credentials = {}) {
   const ORG_ID        = credentials.orgId        || process.env.ORG_ID;
   const SCOPES = process.env.SCOPES || "AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles";
 
+  // Per-session sandbox override — falls back to env var then "prod"
+  if (credentials.sandboxName) {
+    process.env.AEP_SANDBOX_NAME = credentials.sandboxName;
+  }
+
   // ─── Token cache (per server instance) ──────────────────────────────────────
   let _tokenCache = { token: null, expiresAt: 0 };
 
