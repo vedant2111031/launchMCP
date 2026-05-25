@@ -46,7 +46,8 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   // ═══════════════════════════════════════════════════════════════════════════
 
   tool("aep_list_sandboxes", "Lists all sandboxes in the AEP organization. Use to discover available sandbox names before targeting a specific environment. No required params.", {}, async () => {
-    return aep("GET", "/data/foundation/sandbox-management/sandboxes");
+    // /sandboxes requires Sandbox Administration permission; use the available endpoint instead
+    return aep("GET", "/data/foundation/sandbox-management/");
   });
 
   tool("aep_get_sandbox", "Gets details (type, state, region) of a specific AEP sandbox by name. Use to verify a sandbox exists and is active before running operations against it. Required: sandbox_name.", {
@@ -255,13 +256,13 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     if (dataset_id) params.dataSet = dataset_id;
     if (status)     params.status = status;
     if (start)      params.start = start;
-    return aep("GET", "/data/foundation/import/batches", null, params);
+    return aep("GET", "/data/foundation/catalog/batches", null, params);
   });
 
   tool("aep_get_batch", "Get details of a specific ingestion batch", {
     batch_id: z.string().describe("Batch ID"),
   }, async ({ batch_id }) => {
-    return aep("GET", `/data/foundation/import/batches/${batch_id}`);
+    return aep("GET", `/data/foundation/catalog/batches/${batch_id}`);
   });
 
   tool("aep_create_batch", "Create a new ingestion batch for a dataset", {
@@ -781,8 +782,11 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     const body = {
       start,
       end,
-      granularity: "HOUR",
-      metrics: (metrics || ["timeseries.ingestion.dataset.recordsuccess.count"]).map(m => ({ name: m })),
+      granularity: "day",
+      metrics: (metrics || ["timeseries.ingestion.dataset.recordsuccess.count"]).map(m => ({
+        name: m,
+        aggregator: "SUM",
+      })),
     };
     return aep("POST", "/data/infrastructure/observability/insights/metrics", body);
   });
@@ -790,6 +794,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   tool("aep_list_alerts", "List AEP observability alerts", {
     limit: z.number().optional(),
   }, async ({ limit = 20 }) => {
+    // Alert subscriptions live under Query Service
     return aep("GET", "/data/foundation/query/alert-subscriptions", null, { limit });
   });
 
@@ -812,15 +817,13 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
       }],
     };
     if (company_contexts) body.companyContexts = JSON.parse(company_contexts);
-    return aep("POST", "/data/privacy/gdpr/", body, {}, {
-      "Content-Type": "application/json",
-    });
+    return aep("POST", "/data/core/privacy/jobs", body);
   });
 
   tool("aep_get_privacy_job", "Get status of a privacy job", {
     job_id: z.string().describe("Privacy job ID"),
   }, async ({ job_id }) => {
-    return aep("GET", `/data/privacy/gdpr/${job_id}`);
+    return aep("GET", `/data/core/privacy/jobs/${job_id}`);
   });
 
   tool("aep_list_privacy_jobs", "List all privacy jobs", {
@@ -828,10 +831,10 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     status:     z.string().optional().describe("Filter by status: complete, processing, submitted, error"),
     limit:      z.number().optional(),
   }, async ({ regulation, status, limit = 25 }) => {
-    const params = { size: limit };
-    if (regulation) params.regulation = regulation;
-    if (status)     params.status = status;
-    return aep("GET", "/data/privacy/gdpr/", null, params);
+    // regulation is mandatory for the Privacy Service API
+    const params = { size: limit, regulation: regulation || "gdpr" };
+    if (status) params.status = status;
+    return aep("GET", "/data/core/privacy/jobs", null, params);
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1093,8 +1096,8 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     file_path:   z.string().describe("Logical file path within the batch, e.g. 'data/records.json'"),
     file_content: z.string().describe("File content as a string (JSON lines, CSV, etc.)"),
   }, async ({ batch_id, dataset_id, file_path, file_content }) => {
-    // File upload uses the bulk-ingest base URL, not platform.adobe.io
-    const headers = await aepHeaders({
+    // File upload uses PUT to the bulk-ingest endpoint
+    const headers = await aepHeaders("PUT", {
       "Content-Type": "application/octet-stream",
     });
     const url = `https://platform.adobe.io/data/foundation/import/batches/${batch_id}/datasets/${dataset_id}/files/${encodeURIComponent(file_path)}`;
@@ -1121,7 +1124,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   tool("aep_get_batch_status", "Get the current status and metadata of a batch", {
     batch_id: z.string().describe("Batch ID"),
   }, async ({ batch_id }) => {
-    return aep("GET", `/data/foundation/import/batches/${batch_id}`);
+    return aep("GET", `/data/foundation/catalog/batches/${batch_id}`);
   });
 
   tool("aep_replay_batch", "Replay a completed or failed batch (re-ingest its data)", {
@@ -1136,7 +1139,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   }, async ({ dataset_id, limit = 20 }) => {
     const params = { status: "failed", limit };
     if (dataset_id) params.dataSet = dataset_id;
-    return aep("GET", "/data/foundation/import/batches", null, params);
+    return aep("GET", "/data/foundation/catalog/batches", null, params);
   });
 
   tool("aep_get_batch_diagnostics", "Get diagnostic messages (errors/warnings) for a batch", {
