@@ -619,8 +619,8 @@
 
         <div class="form-group">
           <label>AEP Sandbox Name</label>
-          <input type="text" id="cfgSandbox" placeholder="prod">
-          <div class="field-hint">The AEP sandbox to target for all AEP tool calls. Defaults to <strong>prod</strong> if left blank. Use a development sandbox name (e.g. <code>dev</code>) to avoid touching production data.</div>
+          <input type="text" id="cfgSandbox" placeholder="tothenew3">
+          <div class="field-hint">The AEP sandbox to target for all AEP tool calls. Defaults to <strong>tothenew3</strong> if left blank. Use a development sandbox name (e.g. <code>dev</code>) to avoid touching production data.</div>
         </div>
 
         <button type="button" class="btn btn-ghost" onclick="goBack()">← Back</button>
@@ -968,7 +968,7 @@
     const clientId     = document.getElementById('cfgClientId').value.trim();
     const clientSecret = document.getElementById('cfgClientSecret').value.trim();
     const orgId        = document.getElementById('cfgOrgId').value.trim();
-    const sandbox      = document.getElementById('cfgSandbox').value.trim() || 'prod';
+    const sandbox      = document.getElementById('cfgSandbox').value.trim() || 'tothenew3';
 
     if (!clientId || !clientSecret || !orgId) {
       showAlert('alertConfig', 'All fields are required.', 'error'); return;

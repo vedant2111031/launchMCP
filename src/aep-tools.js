@@ -32,11 +32,11 @@ import { createAepClient } from "./aep-client.js";
  * @param {object}   opts.dbg            - { info, verbose, error, http }
  * @param {Function} opts.axios          - axios function
  */
-export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg, axios }) {
+export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg, axios, sandboxName }) {
   // ─── Shared AEP HTTP client ─────────────────────────────────────────────────
   // aep(method, path, data?, params?, extraHeaders?) — authenticated, logged
   // aepHeaders(extra?)                               — raw headers for custom fetch
-  const { aep, aepHeaders } = createAepClient({ getAccessToken, CLIENT_ID, ORG_ID, dbg, axios }); // eslint-disable-line no-unused-vars
+  const { aep, aepHeaders } = createAepClient({ getAccessToken, CLIENT_ID, ORG_ID, dbg, axios, sandboxNameOverride: sandboxName }); // eslint-disable-line no-unused-vars
 
   // Convenience alias used in composite tools that need the sandbox name in logs
   const SANDBOX = process.env.AEP_SANDBOX_NAME || "prod";
