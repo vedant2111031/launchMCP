@@ -247,23 +247,9 @@ app.get("/api/config/status", (req, res) => {
   res.json({ configured: false });
 });
 
-// ─── GET /api/config/requires-password — tell frontend if password gate is on ─
-app.get("/api/config/requires-password", (_req, res) => {
-  const pw = process.env.ACCESS_PASSWORD;
-  res.json({ required: !!(pw && pw !== "changeme123") });
-});
-
 // ─── POST /api/config — validate credentials & create session ─────────────────
 app.post("/api/config", async (req, res) => {
-  const { clientId, clientSecret, orgId, sandbox, accessPassword } = req.body;
-
-  // ── Access password gate (if configured) ──────────────────────────────────
-  const ACCESS_PASSWORD = process.env.ACCESS_PASSWORD;
-  if (ACCESS_PASSWORD && ACCESS_PASSWORD !== "changeme123") {
-    if (!accessPassword || accessPassword !== ACCESS_PASSWORD) {
-      return res.status(401).json({ error: "Invalid access password. Contact the server administrator." });
-    }
-  }
+  const { clientId, clientSecret, orgId, sandbox } = req.body;
 
   if (!clientId || !clientSecret || !orgId) {
     return res.status(400).json({ error: "All fields are required" });
