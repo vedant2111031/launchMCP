@@ -57,7 +57,15 @@ function getBaseUrl(req) {
 
 async function validateAdobeCredentials(clientId, clientSecret, orgId) {
   const IMS_TOKEN_URL = "https://ims-na1.adobelogin.com/ims/token/v3";
-  const SCOPES = "AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles";
+  // Request the full scope set — IMS silently drops any scopes the credential
+  // isn't authorised for, so this is safe and lets us detect what's actually granted.
+  const SCOPES =
+    "cjm.suppression_service.client.delete,cjm.suppression_service.client.all," +
+    "openid,session,AdobeID,read_organizations," +
+    "additional_info.job_function,additional_info.projectedProductContext,additional_info.roles," +
+    "reactor,aep.data.core.identity.read,aep.data.core.ups.read," +
+    "aep.data.core.catalog.read,aep.data.core.schemaregistry.read," +
+    "aep.data.core.segmentation.read,aep.data.core.flowservice.read";
   try {
     const params = new URLSearchParams({
       grant_type:    "client_credentials",
@@ -71,9 +79,12 @@ async function validateAdobeCredentials(clientId, clientSecret, orgId) {
     });
     if (!res.data.access_token) return { valid: false, error: "No access token received" };
     const payload = JSON.parse(Buffer.from(res.data.access_token.split(".")[1], "base64").toString());
+    const scope = payload.scope || "";
     return {
       valid: true,
-      hasReactorScope: !!payload.scope?.includes("reactor"),
+      hasReactorScope: scope.includes("reactor"),
+      hasAepScope:     scope.includes("aep.data") || scope.includes("cjm."),
+      grantedScopes:   scope,
     };
   } catch (err) {
     return { valid: false, error: err.response?.data?.error_description || err.message };
@@ -236,9 +247,23 @@ app.get("/api/config/status", (req, res) => {
   res.json({ configured: false });
 });
 
+// ─── GET /api/config/requires-password — tell frontend if password gate is on ─
+app.get("/api/config/requires-password", (_req, res) => {
+  const pw = process.env.ACCESS_PASSWORD;
+  res.json({ required: !!(pw && pw !== "changeme123") });
+});
+
 // ─── POST /api/config — validate credentials & create session ─────────────────
 app.post("/api/config", async (req, res) => {
-  const { clientId, clientSecret, orgId, sandbox } = req.body;
+  const { clientId, clientSecret, orgId, sandbox, accessPassword } = req.body;
+
+  // ── Access password gate (if configured) ──────────────────────────────────
+  const ACCESS_PASSWORD = process.env.ACCESS_PASSWORD;
+  if (ACCESS_PASSWORD && ACCESS_PASSWORD !== "changeme123") {
+    if (!accessPassword || accessPassword !== ACCESS_PASSWORD) {
+      return res.status(401).json({ error: "Invalid access password. Contact the server administrator." });
+    }
+  }
 
   if (!clientId || !clientSecret || !orgId) {
     return res.status(400).json({ error: "All fields are required" });
@@ -282,14 +307,22 @@ app.post("/api/config", async (req, res) => {
     const mcpUrl = `${getBaseUrl(req)}/mcp/${sessionId}`;
     console.log(`[CONFIG] ✅ Session created: ${sessionId.slice(0, 8)}... → ${mcpUrl}`);
 
+    // Build warning list based on what scopes were actually granted
+    const warnings = [];
+    // Note: Reactor API authenticates via x-api-key + org ID, NOT token scope.
+    // The 'reactor' scope is requested but silently dropped by IMS for most credentials —
+    // this is normal and does NOT prevent Launch/Tags tools from working.
+    if (!validation.hasAepScope) {
+      warnings.push("AEP data scopes not detected in token — AEP tools may return 403/404. Ensure 'Experience Platform API' is added to your credential in Adobe Developer Console and your product profile has sandbox access.");
+    }
+
     res.json({
       success: true,
       sessionId,
       mcpUrl,
-      message: "Configuration successful! Copy the MCP URL and add it to Claude → Settings → Connectors.",
-      warning: validation.hasReactorScope
-        ? null
-        : "Token scope does not include 'reactor'. Add 'Experience Platform Launch API' in Adobe Developer Console.",
+      message: "Configuration successful! Copy the MCP URL and add it to your AI client.",
+      warning: warnings.length ? warnings.join(" | ") : null,
+      grantedScopes: validation.grantedScopes,
     });
   } catch (err) {
     console.error("[CONFIG] Error creating MCP server:", err.message);

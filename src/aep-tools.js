@@ -86,7 +86,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   }, async ({ container = "tenant", limit = 20, start }) => {
     const params = { limit };
     if (start) params.start = start;
-    return aep("GET", `/schemaregistry/${container}/schemas`, null, params, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/schemas`, null, params, {
       Accept: "application/vnd.adobe.xed-id+json",
     });
   });
@@ -96,7 +96,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container: z.enum(["global", "tenant"]).optional().describe("Registry container (default: tenant)"),
   }, async ({ schema_id, container = "tenant" }) => {
     const encoded = encodeURIComponent(schema_id);
-    return aep("GET", `/schemaregistry/${container}/schemas/${encoded}`, null, {}, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/schemas/${encoded}`, null, {}, {
       Accept: "application/vnd.adobe.xed+json;version=1",
     });
   });
@@ -112,7 +112,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     if (description) body.description = description;
     if (allOf)       body.allOf = JSON.parse(allOf);
     if (meta_class)  body["meta:class"] = meta_class;
-    return aep("POST", "/schemaregistry/tenant/schemas", body);
+    return aep("POST", "/data/foundation/schemaregistry/tenant/schemas", body);
   });
 
   tool("aep_update_schema", "Applies a JSON Patch to an existing XDM schema (e.g. add description, add field group reference). Use when modifying a schema without recreating it. Required: schema_id, patch (JSON Patch array as string).", {
@@ -121,7 +121,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container:   z.enum(["global", "tenant"]).optional(),
   }, async ({ schema_id, patch, container = "tenant" }) => {
     const encoded = encodeURIComponent(schema_id);
-    return aep("PATCH", `/schemaregistry/${container}/schemas/${encoded}`, JSON.parse(patch), {}, {
+    return aep("PATCH", `/data/foundation/schemaregistry/${container}/schemas/${encoded}`, JSON.parse(patch), {}, {
       "Content-Type": "application/json-patch+json",
     });
   });
@@ -130,7 +130,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     schema_id: z.string().describe("Schema $id or short ID"),
   }, async ({ schema_id }) => {
     const encoded = encodeURIComponent(schema_id);
-    await aep("DELETE", `/schemaregistry/tenant/schemas/${encoded}`);
+    await aep("DELETE", `/data/foundation/schemaregistry/tenant/schemas/${encoded}`);
     return `Schema ${schema_id} deleted.`;
   });
 
@@ -142,7 +142,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container: z.enum(["global", "tenant"]).optional(),
     limit:     z.number().optional(),
   }, async ({ container = "tenant", limit = 20 }) => {
-    return aep("GET", `/schemaregistry/${container}/classes`, null, { limit }, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/classes`, null, { limit }, {
       Accept: "application/vnd.adobe.xed-id+json",
     });
   });
@@ -152,7 +152,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container: z.enum(["global", "tenant"]).optional(),
   }, async ({ class_id, container = "tenant" }) => {
     const encoded = encodeURIComponent(class_id);
-    return aep("GET", `/schemaregistry/${container}/classes/${encoded}`, null, {}, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/classes/${encoded}`, null, {}, {
       Accept: "application/vnd.adobe.xed+json;version=1",
     });
   });
@@ -161,7 +161,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container: z.enum(["global", "tenant"]).optional(),
     limit:     z.number().optional(),
   }, async ({ container = "tenant", limit = 20 }) => {
-    return aep("GET", `/schemaregistry/${container}/fieldgroups`, null, { limit }, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/fieldgroups`, null, { limit }, {
       Accept: "application/vnd.adobe.xed-id+json",
     });
   });
@@ -171,7 +171,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container:      z.enum(["global", "tenant"]).optional(),
   }, async ({ field_group_id, container = "tenant" }) => {
     const encoded = encodeURIComponent(field_group_id);
-    return aep("GET", `/schemaregistry/${container}/fieldgroups/${encoded}`, null, {}, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/fieldgroups/${encoded}`, null, {}, {
       Accept: "application/vnd.adobe.xed+json;version=1",
     });
   });
@@ -186,7 +186,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     if (description)           body.description = description;
     if (meta_intendedToExtend) body["meta:intendedToExtend"] = JSON.parse(meta_intendedToExtend);
     if (properties)            body.properties = JSON.parse(properties);
-    return aep("POST", "/schemaregistry/tenant/fieldgroups", body);
+    return aep("POST", "/data/foundation/schemaregistry/tenant/fieldgroups", body);
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -917,7 +917,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     dbg.info(`  [aep_get_sandbox_overview] sandbox=${targetSandbox}`);
 
     const [schemas, datasets, segments, mergePolicies] = await Promise.all([
-      aep("GET", "/schemaregistry/tenant/schemas", null, { limit: 100 }, {
+      aep("GET", "/data/foundation/schemaregistry/tenant/schemas", null, { limit: 100 }, {
         Accept: "application/vnd.adobe.xed-id+json",
         "x-sandbox-name": targetSandbox,
       }),
@@ -980,7 +980,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   }, async ({ container = "tenant", limit = 20, offset }) => {
     const params = { limit };
     if (offset) params.offset = offset;
-    return aep("GET", `/schemaregistry/${container}/mixins`, null, params, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/mixins`, null, params, {
       Accept: "application/vnd.adobe.xed-id+json",
     });
   });
@@ -994,7 +994,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     const body = { title, type: "object", "meta:intendedToExtend": JSON.parse(meta_intendedToExtend) };
     if (description) body.description = description;
     if (properties)  body.properties = JSON.parse(properties);
-    return aep("POST", "/schemaregistry/tenant/mixins", body);
+    return aep("POST", "/data/foundation/schemaregistry/tenant/mixins", body);
   });
 
   tool("aep_add_field_group", "Add a field group (mixin) reference to an existing schema's allOf array", {
@@ -1005,7 +1005,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     const encoded = encodeURIComponent(schema_id);
     return aep(
       "PATCH",
-      `/schemaregistry/${container}/schemas/${encoded}`,
+      `/data/foundation/schemaregistry/${container}/schemas/${encoded}`,
       [{ op: "add", path: "/allOf/-", value: { $ref: field_group_id } }],
       {},
       { "Content-Type": "application/json-patch+json" },
@@ -1023,7 +1023,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
   }, async ({ container = "tenant", limit = 20, offset }) => {
     const params = { limit };
     if (offset) params.offset = offset;
-    return aep("GET", `/schemaregistry/${container}/datatypes`, null, params, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/datatypes`, null, params, {
       Accept: "application/vnd.adobe.xed-id+json",
     });
   });
@@ -1033,7 +1033,7 @@ export function registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg,
     container: z.enum(["global", "tenant"]).optional().describe("Registry container (default: tenant)"),
   }, async ({ class_id, container = "tenant" }) => {
     const encoded = encodeURIComponent(class_id);
-    return aep("GET", `/schemaregistry/${container}/unions/${encoded}`, null, {}, {
+    return aep("GET", `/data/foundation/schemaregistry/${container}/unions/${encoded}`, null, {}, {
       Accept: "application/vnd.adobe.xed+json;version=1",
     });
   });

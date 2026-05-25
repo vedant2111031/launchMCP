@@ -38,12 +38,19 @@ export async function buildMcpServer(credentials = {}) {
   const CLIENT_ID     = credentials.clientId     || process.env.CLIENT_ID;
   const CLIENT_SECRET = credentials.clientSecret || process.env.CLIENT_SECRET;
   const ORG_ID        = credentials.orgId        || process.env.ORG_ID;
-  const SCOPES = process.env.SCOPES || "AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles";
 
-  // Per-session sandbox override — falls back to env var then "prod"
-  if (credentials.sandboxName) {
-    process.env.AEP_SANDBOX_NAME = credentials.sandboxName;
-  }
+  // IMS silently drops scopes the credential isn't authorised for — safe to request all.
+  // process.env.SCOPES overrides everything (set in .env or Render env vars).
+  const SCOPES = process.env.SCOPES ||
+    "cjm.suppression_service.client.delete,cjm.suppression_service.client.all," +
+    "openid,session,AdobeID,read_organizations," +
+    "additional_info.job_function,additional_info.projectedProductContext,additional_info.roles," +
+    "reactor,aep.data.core.identity.read,aep.data.core.ups.read," +
+    "aep.data.core.catalog.read,aep.data.core.schemaregistry.read," +
+    "aep.data.core.segmentation.read,aep.data.core.flowservice.read";
+
+  // Per-session sandbox — stored in closure, never mutates process.env
+  const SANDBOX_NAME = credentials.sandboxName || process.env.AEP_SANDBOX_NAME || "prod";
 
   // ─── Token cache (per server instance) ──────────────────────────────────────
   let _tokenCache = { token: null, expiresAt: 0 };
@@ -1182,7 +1189,7 @@ tool("publish_all_changes", "Composite: create library with ALL unpublished rule
   // ═══════════════════════════════════════════════════════════════════════════
   // AEP (Adobe Experience Platform) TOOLS
   // ═══════════════════════════════════════════════════════════════════════════
-  registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg, axios });
+  registerAepTools({ tool, getAccessToken, CLIENT_ID, ORG_ID, dbg, axios, sandboxName: SANDBOX_NAME });
 
   dbg.info("✅ Adobe Launch + AEP MCP server instance created (74 Reactor + 196 AEP = 270 tools total)");
   return server;
