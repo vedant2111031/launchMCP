@@ -57,7 +57,15 @@ function getBaseUrl(req) {
 
 async function validateAdobeCredentials(clientId, clientSecret, orgId) {
   const IMS_TOKEN_URL = "https://ims-na1.adobelogin.com/ims/token/v3";
-  const SCOPES = "AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles";
+  // Request the full scope set — IMS silently drops any scopes the credential
+  // isn't authorised for, so this is safe and lets us detect what's actually granted.
+  const SCOPES =
+    "cjm.suppression_service.client.delete,cjm.suppression_service.client.all," +
+    "openid,session,AdobeID,read_organizations," +
+    "additional_info.job_function,additional_info.projectedProductContext,additional_info.roles," +
+    "reactor,aep.data.core.identity.read,aep.data.core.ups.read," +
+    "aep.data.core.catalog.read,aep.data.core.schemaregistry.read," +
+    "aep.data.core.segmentation.read,aep.data.core.flowservice.read";
   try {
     const params = new URLSearchParams({
       grant_type:    "client_credentials",
@@ -71,9 +79,12 @@ async function validateAdobeCredentials(clientId, clientSecret, orgId) {
     });
     if (!res.data.access_token) return { valid: false, error: "No access token received" };
     const payload = JSON.parse(Buffer.from(res.data.access_token.split(".")[1], "base64").toString());
+    const scope = payload.scope || "";
     return {
       valid: true,
-      hasReactorScope: !!payload.scope?.includes("reactor"),
+      hasReactorScope: scope.includes("reactor"),
+      hasAepScope:     scope.includes("aep.data") || scope.includes("cjm."),
+      grantedScopes:   scope,
     };
   } catch (err) {
     return { valid: false, error: err.response?.data?.error_description || err.message };
@@ -83,6 +94,7 @@ async function validateAdobeCredentials(clientId, clientSecret, orgId) {
 // ─── Static UI ────────────────────────────────────────────────────────────────
 app.get("/",           (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "config.html")));
 app.get("/config",     (_req, res) => res.redirect("/"));
+app.get("/dashboard",  (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
 app.get("/style.css",  (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "style.css")));
 app.get("/app.js",     (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "app.js")));
 app.get("/sitemap.xml",(_req, res) => {
@@ -237,7 +249,7 @@ app.get("/api/config/status", (req, res) => {
 
 // ─── POST /api/config — validate credentials & create session ─────────────────
 app.post("/api/config", async (req, res) => {
-  const { clientId, clientSecret, orgId } = req.body;
+  const { clientId, clientSecret, orgId, sandbox } = req.body;
 
   if (!clientId || !clientSecret || !orgId) {
     return res.status(400).json({ error: "All fields are required" });
@@ -246,7 +258,9 @@ app.post("/api/config", async (req, res) => {
     return res.status(400).json({ error: "Organization ID must be in format: YOUR_ORG_ID@AdobeOrg" });
   }
 
-  console.log(`[CONFIG] Validating credentials for org: ${orgId}`);
+  const sandboxName = (sandbox && sandbox.trim()) ? sandbox.trim() : (process.env.AEP_SANDBOX_NAME || "prod");
+
+  console.log(`[CONFIG] Validating credentials for org: ${orgId} sandbox: ${sandboxName}`);
   const validation = await validateAdobeCredentials(clientId, clientSecret, orgId);
   if (!validation.valid) {
     return res.status(401).json({ error: `Adobe authentication failed: ${validation.error}` });
@@ -256,11 +270,11 @@ app.post("/api/config", async (req, res) => {
 
   try {
     // Build a real MCP server with these credentials
-    const server = await buildMcpServerWithCredentials({ clientId, clientSecret, orgId });
+    const server = await buildMcpServerWithCredentials({ clientId, clientSecret, orgId, sandboxName });
 
     userSessions.set(sessionId, {
       orgId,
-      _credentials: { clientId, clientSecret, orgId },
+      _credentials: { clientId, clientSecret, orgId, sandboxName },
       server,
       mcpSessions: new Map(), // inner MCP SDK sessions keyed by mcp-session-id
       createdAt:  new Date(),
@@ -279,14 +293,22 @@ app.post("/api/config", async (req, res) => {
     const mcpUrl = `${getBaseUrl(req)}/mcp/${sessionId}`;
     console.log(`[CONFIG] ✅ Session created: ${sessionId.slice(0, 8)}... → ${mcpUrl}`);
 
+    // Build warning list based on what scopes were actually granted
+    const warnings = [];
+    // Note: Reactor API authenticates via x-api-key + org ID, NOT token scope.
+    // The 'reactor' scope is requested but silently dropped by IMS for most credentials —
+    // this is normal and does NOT prevent Launch/Tags tools from working.
+    if (!validation.hasAepScope) {
+      warnings.push("AEP data scopes not detected in token — AEP tools may return 403/404. Ensure 'Experience Platform API' is added to your credential in Adobe Developer Console and your product profile has sandbox access.");
+    }
+
     res.json({
       success: true,
       sessionId,
       mcpUrl,
-      message: "Configuration successful! Copy the MCP URL and add it to Claude → Settings → Connectors.",
-      warning: validation.hasReactorScope
-        ? null
-        : "Token scope does not include 'reactor'. Add 'Experience Platform Launch API' in Adobe Developer Console.",
+      message: "Configuration successful! Copy the MCP URL and add it to your AI client.",
+      warning: warnings.length ? warnings.join(" | ") : null,
+      grantedScopes: validation.grantedScopes,
     });
   } catch (err) {
     console.error("[CONFIG] Error creating MCP server:", err.message);
@@ -373,7 +395,7 @@ app.listen(PORT, () => {
   console.log(`  Config UI  : http://localhost:${PORT}/`);
   console.log(`  Health     : http://localhost:${PORT}/health`);
   console.log(`  MCP URL    : http://localhost:${PORT}/mcp/<sessionId>`);
-  console.log(`  Tools      : 74`);
+  console.log(`  Tools      : 74 Reactor + 196 AEP = 270 total`);
   console.log("=".repeat(70));
   console.log("  Claude.ai integration:");
   console.log("  1. Open the Config UI and enter your Adobe credentials");

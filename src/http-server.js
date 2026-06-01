@@ -44,7 +44,7 @@ app.get("/", (_req, res) => res.json({
   name: "adobe-launch-mcp", version: "2.0.0",
   transport: "streamable-http",
   mcp_endpoint: `http://localhost:${PORT}/mcp`,
-  tools: 74, status: "ok",
+  tools: { launch: 74, aep: 196, total: 270 }, status: "ok",
 }));
 
 app.get("/health", (_req, res) => res.json({
@@ -101,7 +101,7 @@ app.listen(PORT, () => {
   console.log("=".repeat(62));
   console.log(`  MCP endpoint : http://localhost:${PORT}/mcp`);
   console.log(`  Health       : http://localhost:${PORT}/health`);
-  console.log(`  Tools        : 74`);
+  console.log(`  Tools        : 74 Reactor + 196 AEP = 270 total`);
   console.log("=".repeat(62));
   console.log("  Claude Desktop / Cursor / Kiro / Windsurf:");
   console.log(`    { "url": "http://localhost:${PORT}/mcp" }`);
