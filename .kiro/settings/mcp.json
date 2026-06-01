@@ -3,13 +3,42 @@
     "adobe-launch": {
       "command": "node",
       "args": ["src/index.js"],
+      "cwd": "c:\\Users\\Vedant Pandey\\Desktop\\Learning\\Launch - Copy",
+      "env": {
+        "CLIENT_ID": "5a5d0cb926884d7fabb8fa441e2add9b",
+        "CLIENT_SECRET": "p8e-prAz9rhH15HpA_PDkFrdTh_4StP-n110",
+        "ORG_ID": "65B229AE5ED637A00A495E96@AdobeOrg",
+        "SCOPES": "cjm.suppression_service.client.delete,cjm.suppression_service.client.all,openid,session,AdobeID,read_organizations,additional_info.projectedProductContext,additional_info.job_function,additional_info.roles,reactor,aep.data.core.identity.read,aep.data.core.ups.read,aep.data.core.catalog.read,aep.data.core.schemaregistry.read,aep.data.core.segmentation.read,aep.data.core.flowservice.read"
+      },
       "disabled": false,
       "autoApprove": [
         "list_companies",
         "list_properties",
-        "list_rules",
         "list_extensions",
-        "list_data_elements"
+        "list_extension_packages",
+        "list_rules",
+        "list_rule_components",
+        "list_data_elements",
+        "list_libraries",
+        "list_environments",
+        "list_hosts",
+        "list_audit_events",
+        "list_callbacks",
+        "list_library_resources",
+        "list_property_builds",
+        "list_secrets",
+        "get_property",
+        "get_rule",
+        "get_data_element",
+        "get_extension_package",
+        "get_library",
+        "get_environment",
+        "get_host",
+        "get_build",
+        "get_callback",
+        "get_secret",
+        "get_profile",
+        "search_resources"
       ]
     }
   }

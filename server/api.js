@@ -645,15 +645,39 @@ app.delete("/api/direct/callbacks/:id", directRoute(async (req) => {
   return { deleted: true, id: req.params.id };
 }));
 
-// GET /api/direct/builds?property_id=PR...
+// GET /api/direct/builds?property_id=PR... or ?library_id=LB...
 app.get("/api/direct/builds", directRoute(async (req) => {
   const { property_id, library_id, page_size = 25 } = req.query;
-  let path;
-  if (library_id)       path = `/libraries/${library_id}/builds`;
-  else if (property_id) path = `/properties/${property_id}/builds`;
-  else throw Object.assign(new Error("property_id or library_id required"), { response: { status: 400, data: { errors: [{ title: "property_id or library_id required" }] } } });
-  const data = await reactorGet(path, { "page[size]": page_size });
-  return data.data.map((b) => ({ id: b.id, status: b.attributes.status, created: b.attributes.created_at, updated: b.attributes.updated_at }));
+  if (library_id) {
+    // Direct library builds lookup
+    const data = await reactorGet(`/libraries/${library_id}/builds`, { "page[size]": page_size });
+    return data.data.map((b) => ({ id: b.id, status: b.attributes.status, created: b.attributes.created_at, updated: b.attributes.updated_at }));
+  } else if (property_id) {
+    // Aggregate builds across all libraries for the property
+    // (Reactor API has no /properties/{id}/builds endpoint)
+    const libsData = await reactorGet(`/properties/${property_id}/libraries`, { "page[size]": 100 });
+    const libraries = libsData.data || [];
+    const allBuilds = [];
+    for (const lib of libraries) {
+      try {
+        const buildsData = await reactorGet(`/libraries/${lib.id}/builds`, { "page[size]": page_size });
+        (buildsData.data || []).forEach((b) => {
+          allBuilds.push({
+            id:           b.id,
+            status:       b.attributes.status,
+            library_id:   lib.id,
+            library_name: lib.attributes?.name,
+            created:      b.attributes.created_at,
+            updated:      b.attributes.updated_at,
+          });
+        });
+      } catch { /* skip libraries with no builds */ }
+    }
+    allBuilds.sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0));
+    return allBuilds;
+  } else {
+    throw Object.assign(new Error("property_id or library_id required"), { response: { status: 400, data: { errors: [{ title: "property_id or library_id required" }] } } });
+  }
 }));
 
 // GET /api/direct/secrets?property_id=PR...

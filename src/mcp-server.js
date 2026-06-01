@@ -175,7 +175,10 @@ tool("create_property", "Create a new tag property", {
   development: z.boolean().optional().describe("Mark as development property"),
 }, async ({ company_id, name, platform, domains, development }) => {
   const attributes = { name, platform, development: development ?? false };
-  if (platform === "web" && domains?.length) attributes.domains = domains;
+  // Web properties require at least one domain
+  if (platform === "web") {
+    attributes.domains = domains?.length ? domains : ["example.com"];
+  }
   return reactor("POST", `/companies/${company_id}/properties`, {
     data: { type: "properties", attributes },
   });
@@ -219,7 +222,10 @@ tool("setup_property_complete", "Composite: create property + Akamai host + dev/
 
   // 1. Create property
   const attributes = { name, platform, development: false };
-  if (platform === "web" && domains?.length) attributes.domains = domains;
+  // Web properties require at least one domain
+  if (platform === "web") {
+    attributes.domains = domains?.length ? domains : ["example.com"];
+  }
   const propRes = await reactor("POST", `/companies/${company_id}/properties`, {
     data: { type: "properties", attributes },
   });
@@ -464,6 +470,7 @@ tool("list_rule_components", "List all components (events, conditions, actions) 
 });
 
 tool("create_rule_component", "Add an event, condition, or action to a rule", {
+  property_id:           z.string().describe("Property ID that owns the rule"),
   rule_id:               z.string().describe("Rule ID this component belongs to"),
   extension_id:          z.string().describe("Extension ID that provides this component type"),
   delegate_descriptor_id: z.string().describe(
@@ -475,7 +482,7 @@ tool("create_rule_component", "Add an event, condition, or action to a rule", {
   rule_order:   z.number().optional().describe("Rule execution order"),
   timeout:      z.number().optional().describe("Timeout in ms (for conditions)"),
   negate:       z.boolean().optional().describe("Negate condition result"),
-}, async ({ rule_id, extension_id, delegate_descriptor_id, name, settings, order, rule_order, timeout, negate }) => {
+}, async ({ property_id, rule_id, extension_id, delegate_descriptor_id, name, settings, order, rule_order, timeout, negate }) => {
   const attributes = { delegate_descriptor_id };
   if (name !== undefined)       attributes.name = name;
   if (settings !== undefined)   attributes.settings = settings;
@@ -484,7 +491,8 @@ tool("create_rule_component", "Add an event, condition, or action to a rule", {
   if (timeout !== undefined)    attributes.timeout = timeout;
   if (negate !== undefined)     attributes.negate = negate;
 
-  return reactor("POST", "/rule_components", {
+  // Correct endpoint per Reactor API docs: POST /properties/{PROPERTY_ID}/rule_components
+  return reactor("POST", `/properties/${property_id}/rule_components`, {
     data: {
       type: "rule_components",
       attributes,
@@ -661,14 +669,26 @@ tool("create_akamai_host", "Create an Akamai-managed host on a property", {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 tool("search_resources", "Full-text search across resources in a property", {
-  property_id: z.string().describe("Property ID"),
-  query:       z.string().describe("Search query string"),
-  type_in:     z.string().optional().describe("Comma-separated resource types to filter: rules,data_elements,extensions,rule_components"),
-}, async ({ property_id, query, type_in }) => {
-  const attributes = { query };
-  if (type_in) attributes.type_in = type_in;
-  return reactor("POST", `/properties/${property_id}/search`, {
-    data: { type: "search", attributes },
+  property_id: z.string().optional().describe("Property ID (unused — search is global across all accessible properties)"),
+  query:       z.string().describe("Search query string — matched against resource names and settings"),
+  type_in:     z.string().optional().describe("Comma-separated resource types to filter: rules,data_elements,extensions,rule_components,libraries,environments,hosts,callbacks,builds,properties,audit_events,extension_packages"),
+}, async ({ query, type_in }) => {
+  // Reactor API: POST /search (global endpoint, not property-scoped)
+  // Docs: https://experienceleague.adobe.com/en/docs/experience-platform/tags/api/endpoints/search
+  // Body: { data: { query: { "attributes.name": { value: "..." } }, resource_types: [...], from: 0, size: 25 } }
+  const resourceTypes = type_in
+    ? (Array.isArray(type_in) ? type_in : type_in.split(",").map((s) => s.trim()).filter(Boolean))
+    : ["rules", "data_elements", "extensions", "rule_components"];
+
+  return reactor("POST", `/search`, {
+    data: {
+      from: 0,
+      size: 25,
+      query: {
+        "attributes.name": { value: query },
+      },
+      resource_types: resourceTypes,
+    },
   });
 });
 
@@ -763,11 +783,45 @@ tool("get_build", "Get details of a specific build", {
 
 tool("list_property_builds", "List all builds for a property across all libraries", {
   property_id: z.string().describe("Property ID"),
-  page_size:   z.number().optional().describe("Results per page"),
+  page_size:   z.number().optional().describe("Results per page per library"),
 }, async ({ property_id, page_size }) => {
-  return reactor("GET", `/properties/${property_id}/builds`, null, {
-    "page[size]": page_size || 25,
+  // Reactor API has no /properties/{id}/builds endpoint.
+  // We fetch all libraries for the property, then aggregate builds from each.
+  const libsRes = await reactor("GET", `/properties/${property_id}/libraries`, null, {
+    "page[size]": 100,
   });
+  const libraries = libsRes.data || [];
+  dbg.info(`  [list_property_builds] found ${libraries.length} libraries for property ${property_id}`);
+
+  const allBuilds = [];
+  for (const lib of libraries) {
+    try {
+      const buildsRes = await reactor("GET", `/libraries/${lib.id}/builds`, null, {
+        "page[size]": page_size || 25,
+      });
+      const builds = buildsRes.data || [];
+      builds.forEach((b) => {
+        b._library_id   = lib.id;
+        b._library_name = lib.attributes?.name;
+      });
+      allBuilds.push(...builds);
+    } catch (err) {
+      dbg.error(`  Failed to fetch builds for library ${lib.id}: ${err.message}`);
+    }
+  }
+
+  // Sort newest first
+  allBuilds.sort((a, b) =>
+    new Date(b.attributes?.created_at || 0) - new Date(a.attributes?.created_at || 0)
+  );
+
+  return {
+    data: allBuilds,
+    meta: {
+      total_builds:    allBuilds.length,
+      libraries_checked: libraries.length,
+    },
+  };
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1011,7 +1065,7 @@ tool("create_rule_with_components", "Composite: create a rule and add event + op
   const components = [];
 
   // 2. Add event
-  const eventRes = await reactor("POST", "/rule_components", {
+  const eventRes = await reactor("POST", `/properties/${property_id}/rule_components`, {
     data: {
       type: "rule_components",
       attributes: {
@@ -1030,7 +1084,7 @@ tool("create_rule_with_components", "Composite: create a rule and add event + op
 
   // 3. Add condition (optional)
   if (condition_type) {
-    const condRes = await reactor("POST", "/rule_components", {
+    const condRes = await reactor("POST", `/properties/${property_id}/rule_components`, {
       data: {
         type: "rule_components",
         attributes: {
@@ -1051,7 +1105,7 @@ tool("create_rule_with_components", "Composite: create a rule and add event + op
 
   // 4. Add action (optional)
   if (action_type) {
-    const actRes = await reactor("POST", "/rule_components", {
+    const actRes = await reactor("POST", `/properties/${property_id}/rule_components`, {
       data: {
         type: "rule_components",
         attributes: {
